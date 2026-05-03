@@ -1,0 +1,13 @@
+name: nighttrap-release
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - numpy
+  - pandas
+  - scikit-learn
+  - openpyxl
+  - pyyaml
+  - pip
+  - pip:
+      - huggingface_hub

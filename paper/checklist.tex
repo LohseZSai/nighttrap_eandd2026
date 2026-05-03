@@ -1,0 +1,259 @@
+% NeurIPS 2026 Paper Checklist
+% Source basis: official NeurIPS 2026 formatting template/checklist.
+% This file is intended to be included near the end of the paper with:
+%   \newpage
+%   \input{checklist.tex}
+%
+% The answer macros are normally provided by neurips_2026.sty.
+% The fallbacks below make this file more robust if compiled outside that style.
+
+\providecommand{\answerYes}[1][]{\textcolor{blue}{[Yes] #1}}
+\providecommand{\answerNo}[1][]{\textcolor{orange}{[No] #1}}
+\providecommand{\answerNA}[1][]{\textcolor{gray}{[N/A] #1}}
+
+\section*{NeurIPS Paper Checklist}
+
+
+
+\begin{enumerate}
+
+\item {\bf Claims}
+\begin{itemize}
+    \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The abstract and introduction state that NightTrap is a benchmark for night camera-trap review pipelines, with the fifth task fixed as binary needs-review recommendation. The paper also states that safe auto-pass remains limited, matching the reported results.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the abstract and introduction do not include the claims made in the paper.
+        \item The abstract and/or introduction should clearly state the claims made, including the contributions made in the paper and important assumptions and limitations. A \answerNo{} or \answerNA{} answer to this question will not be perceived well by the reviewers.
+        \item The claims made should match theoretical and experimental results, and reflect how much the results can be expected to generalize to other settings.
+        \item It is fine to include aspirational goals as motivation as long as it is clear that these goals are not attained by the paper.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Limitations}
+\begin{itemize}
+    \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The paper includes a Limitations section covering the scope of needs-review labels, three-way severity labels, missing Qwen3 continuous AUROC/AUPRC scores, closed-source references, and remaining annotation checks.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper has no limitation while the answer \answerNo{} means that the paper has limitations, but those are not discussed in the paper.
+        \item The authors are encouraged to create a separate ``Limitations'' section in their paper.
+        \item The paper should point out any strong assumptions and how robust the results are to violations of these assumptions.
+        \item The authors should reflect on the scope of the claims made, e.g., if the approach was only tested on a few datasets or with a few runs.
+        \item The authors should reflect on the factors that influence the performance of the approach.
+        \item The authors should discuss the computational efficiency of the proposed algorithms and how they scale with dataset size.
+        \item If applicable, the authors should discuss possible limitations of their approach to address problems of privacy and fairness.
+        \item Reviewers will be specifically instructed to not penalize honesty concerning limitations.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Theory assumptions and proofs}
+\begin{itemize}
+    \item[] Question: For each theoretical result, does the paper provide the full set of assumptions and a complete (and correct) proof?
+    \item[] Answer: \answerNA{}
+    \item[] Justification: The paper introduces a benchmark and empirical evaluation, not theoretical results, theorems, or proofs.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not include theoretical results.
+        \item All the theorems, formulas, and proofs in the paper should be numbered and cross-referenced.
+        \item All assumptions should be clearly stated or referenced in the statement of any theorems.
+        \item The proofs can either appear in the main paper or the supplemental material, but if they appear in the supplemental material, the authors are encouraged to provide a short proof sketch to provide intuition.
+        \item Any informal proof provided in the core of the paper should be complemented by formal proofs provided in appendix or supplemental material.
+        \item Theorems and Lemmas that the proof relies upon should be properly referenced.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Experimental result reproducibility}
+\begin{itemize}
+    \item[] Question: Does the paper fully disclose all the information needed to reproduce the main experimental results of the paper to the extent that it affects the main claims and/or conclusions of the paper (regardless of whether the code and data are provided or not)?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The appendix includes an Artifact, Release, and Reproducibility section with release package, result inventory, run details, and script-to-table mappings for the main results.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not include experiments.
+        \item If the paper includes experiments, a \answerNo{} answer to this question will not be perceived well by the reviewers: Making the paper reproducible is important, regardless of whether the code and data are provided or not.
+        \item If the contribution is a dataset and/or model, the authors should describe the steps taken to make their results reproducible or verifiable.
+        \item Depending on the contribution, reproducibility can be accomplished in various ways, including releasing code and data, detailed instructions, access to a hosted model, releasing a model checkpoint, or other appropriate means.
+        \item While NeurIPS does not require releasing code, the conference does require all submissions to provide some reasonable avenue for reproducibility, which may depend on the nature of the contribution.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Open access to data and code}
+\begin{itemize}
+    \item[] Question: Does the paper provide open access to the data and code, with sufficient instructions to faithfully reproduce the main experimental results, as described in supplemental material?
+    \item[] Answer: \answerYes{with restrictions}
+    \item[] Justification: The anonymous Hugging Face dataset repository provides the derived benchmark metadata, splits, labels, prompts, result artifacts, Croissant metadata, and access instructions; the anonymous GitHub repository provides the smoke test, environment files, paper snapshot, and reproducibility scripts. Raw images are not redistributed because upstream source dataset licenses and access terms govern image access.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that paper does not include experiments requiring code.
+        \item Please see the NeurIPS code and data submission guidelines for more details.
+        \item While we encourage the release of code and data, we understand that this might not be possible, so \answerNo{} is an acceptable answer. Papers cannot be rejected simply for not including code, unless this is central to the contribution (e.g., for a new open-source benchmark).
+        \item The instructions should contain the exact command and environment needed to run to reproduce the results.
+        \item The authors should provide instructions on data access and preparation, including how to access the raw data, preprocessed data, intermediate data, and generated data.
+        \item The authors should provide scripts to reproduce all experimental results for the new proposed method and baselines. If only a subset of experiments are reproducible, they should state which ones are omitted from the script and why.
+        \item At submission time, to preserve anonymity, the authors should release anonymized versions if applicable.
+        \item Providing as much information as possible in supplemental material is recommended, but including URLs to data and code is permitted.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Experimental setting/details}
+\begin{itemize}
+    \item[] Question: Does the paper specify all the training and test details (e.g., data splits, hyperparameters, how they were chosen, type of optimizer) necessary to understand the results?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The experimental setup is described in the main paper, and appendix tables document result inventory, scripts, inputs, outputs, and available run details.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not include experiments.
+        \item The experimental setting should be presented in the core of the paper to a level of detail that is necessary to appreciate the results and make sense of them.
+        \item The full details can be provided either with the code, in appendix, or as supplemental material.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Experiment statistical significance}
+\begin{itemize}
+    \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
+    \item[] Answer: \answerNo{}
+    \item[] Justification: Bootstrap confidence intervals are reported for selected three-way severity rows, but not for all main-table rows; the paper states the available scope rather than claiming full significance coverage.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not include experiments.
+        \item The authors should answer \answerYes{} if the results are accompanied by error bars, confidence intervals, or statistical significance tests, at least for the experiments that support the main claims of the paper.
+        \item The factors of variability that the error bars are capturing should be clearly stated.
+        \item The method for calculating the error bars should be explained.
+        \item The assumptions made should be given.
+        \item It should be clear whether the error bar is the standard deviation or the standard error of the mean.
+        \item If error bars are reported in tables or plots, the authors should explain in the text how they were calculated and reference the corresponding figures or tables in the text.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Experiments compute resources}
+\begin{itemize}
+    \item[] Question: For each experiment, does the paper provide sufficient information on the computer resources (type of compute workers, memory, time of execution) needed to reproduce the experiments?
+    \item[] Answer: \answerNo{}
+    \item[] Justification: The appendix includes a compute-resource table, but several runtime, batch-size, and exact hardware fields are not recorded in the current logs and are explicitly marked as such.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not include experiments.
+        \item The paper should indicate the type of compute workers CPU or GPU, internal cluster, or cloud provider, including relevant memory and storage.
+        \item The paper should provide the amount of compute required for each of the individual experimental runs as well as estimate the total compute.
+        \item The paper should disclose whether the full research project required more compute than the experiments reported in the paper.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Code of ethics}
+\begin{itemize}
+    \item[] Question: Does the research conducted in the paper conform, in every respect, with the NeurIPS Code of Ethics \url{https://neurips.cc/public/EthicsGuidelines}?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The paper includes safeguards for data access, anonymization, non-redistribution of restricted raw images, and human-in-the-loop use; authors should confirm final institutional compliance before submission.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the authors have not reviewed the NeurIPS Code of Ethics.
+        \item If the authors answer \answerNo{}, they should explain the special circumstances that require a deviation from the Code of Ethics.
+        \item The authors should make sure to preserve anonymity.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Broader impacts}
+\begin{itemize}
+    \item[] Question: Does the paper discuss both potential positive societal impacts and negative societal impacts of the work performed?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The appendix includes a Broader Impacts and Safeguards section covering positive effects, failure risks, sensitive location/species risks, and detector-pool bias.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that there is no societal impact of the work performed.
+        \item If the authors answer \answerNA{} or \answerNo{}, they should explain why their work has no societal impact or why the paper does not address societal impact.
+        \item Examples of negative societal impacts include potential malicious or unintended uses, fairness considerations, privacy considerations, and security considerations.
+        \item If there is a direct path to any negative applications, the authors should point it out.
+        \item The authors should consider possible harms that could arise when the technology is being used as intended and functioning correctly, when it is being used as intended but gives incorrect results, and following misuse.
+        \item If there are negative societal impacts, the authors could also discuss possible mitigation strategies.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Safeguards}
+\begin{itemize}
+    \item[] Question: Does the paper describe safeguards that have been put in place for responsible release of data or models that have a high risk for misuse (e.g., pre-trained language models, image generators, or scraped datasets)?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The paper describes safeguards including site/location anonymization, license-gated raw-image access, no restricted raw-image redistribution, high-recall safe auto-pass reporting, and a manual audit manifest for detector-assisted empty pools.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper poses no such risks.
+        \item Released models that have a high risk for misuse or dual-use should be released with necessary safeguards to allow for controlled use of the model.
+        \item Datasets that have been scraped from the Internet could pose safety risks. The authors should describe how they avoided releasing unsafe images.
+        \item We recognize that providing effective safeguards is challenging, and many papers do not require this, but we encourage authors to take this into account and make a best faith effort.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Licenses for existing assets}
+\begin{itemize}
+    \item[] Question: Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected?
+    \item[] Answer: \answerNo{}
+    \item[] Justification: The appendix includes a license and data-access table, but several upstream dataset/model licenses are marked verify before submission; final license confirmation remains an author task.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not use existing assets.
+        \item The authors should cite the original paper that produced the code package or dataset.
+        \item The authors should state which version of the asset is used and, if possible, include a URL.
+        \item The name of the license should be included for each asset.
+        \item For scraped data from a particular source, the copyright and terms of service of that source should be provided.
+        \item If assets are released, the license, copyright information, and terms of use in the package should be provided.
+        \item For existing datasets that are re-packaged, both the original license and the license of the derived asset should be provided.
+        \item If this information is not available online, the authors are encouraged to reach out to the asset's creators.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf New assets}
+\begin{itemize}
+    \item[] Question: Are new assets introduced in the paper well documented and is the documentation provided alongside the assets?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The appendix documents the new derived benchmark package, including the dataset card, validated Croissant metadata with RAI fields, released metadata/splits/labels/code, and restrictions on raw images.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not release new assets.
+        \item Researchers should communicate the details of the dataset/code/model as part of their submissions via structured templates, including details about training, license, limitations, etc.
+        \item The paper should discuss whether and how consent was obtained from people whose asset is used.
+        \item At submission time, remember to anonymize your assets if applicable.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Crowdsourcing and research with human subjects}
+\begin{itemize}
+    \item[] Question: For crowdsourcing experiments and research with human subjects, does the paper include the full text of instructions given to participants and screenshots, if applicable, as well as details about compensation (if any)?
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The appendix includes an English translation of the questionnaire items and aggregate-response summary. The questionnaire is described as collecting high-level role and usage-preference statistics only, without sensitive personal attributes, and it was used to motivate task design rather than produce labels. Authors should confirm compensation and institutional-review details before final submission.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not involve crowdsourcing nor research with human subjects.
+        \item Including this information in the supplemental material is fine, but if the main contribution of the paper involves human subjects, then as much detail as possible should be included in the main paper.
+        \item According to the NeurIPS Code of Ethics, workers involved in data collection, curation, or other labor should be paid at least the minimum wage in the country of the data collector.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Institutional review board (IRB) approvals or equivalent for research with human subjects}
+\begin{itemize}
+    \item[] Question: Does the paper describe potential risks incurred by study participants, whether such risks were disclosed to the subjects, and whether Institutional Review Board (IRB) approvals (or an equivalent approval/review based on the requirements of your country or institution) were obtained?
+    \item[] Answer: \answerNo{}
+    \item[] Justification: The draft does not claim IRB approval. The appendix states that this was not an interventional human-subject experiment and that authors must verify institutional requirements before submission.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the paper does not involve crowdsourcing nor research with human subjects.
+        \item Depending on the country in which research is conducted, IRB approval (or equivalent) may be required for any human subjects research. If you obtained IRB approval, you should clearly state this in the paper.
+        \item We recognize that the procedures for this may vary significantly between institutions and locations, and we expect authors to adhere to the NeurIPS Code of Ethics and the guidelines for their institution.
+        \item For initial submissions, do not include any information that would break anonymity, if applicable.
+    \end{itemize}
+\end{itemize}
+
+\item {\bf Declaration of LLM usage}
+\begin{itemize}
+    \item[] Question: Does the paper describe the usage of LLMs if it is an important, original, or non-standard component of the core methods in this research? Note that if the LLM is used only for writing, editing, or formatting purposes and does not impact the core methodology, scientific rigor, or originality of the research, declaration is not required.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The appendix declares that VLMs are core experimental subjects, prompt templates should be released, GPT rows are reference-only, and any LLM assistance for writing/editing did not generate labels or results.
+    \item[] Guidelines:
+    \begin{itemize}
+        \item The answer \answerNA{} means that the core method development in this research does not involve LLMs as any important, original, or non-standard components.
+        \item Please refer to the NeurIPS LLM policy in the handbook for what should or should not be described.
+    \end{itemize}
+\end{itemize}
+
+\end{enumerate}
