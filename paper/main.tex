@@ -1,11 +1,6 @@
-\documentclass[11pt]{article}
+\documentclass{article}
 \PassOptionsToPackage{numbers,sort&compress}{natbib}
-\IfFileExists{neurips_2026.sty}{
-  \usepackage[preprint]{neurips_2026}
-}{
-  \usepackage[a4paper,margin=1in]{geometry}
-  \usepackage{natbib}
-}
+\usepackage[eandd]{neurips_2026}
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
@@ -16,45 +11,33 @@
 \usepackage{multirow}
 \usepackage[table]{xcolor}
 \usepackage{amsmath,amssymb}
-\usepackage{enumitem}
 \usepackage{hyperref}
 \usepackage{xurl}
 \usepackage{fancyvrb}
-\usepackage{caption}
-\usepackage{titlesec}
 \usepackage{graphicx}
 \usepackage{placeins}
 \usepackage[most]{tcolorbox}
 
+\newtcolorbox{modelbox}{
+  colback=gray!6,
+  colframe=gray!35,
+  boxrule=0.35pt,
+  arc=1.2pt,
+  left=4pt,
+  right=4pt,
+  top=3pt,
+  bottom=3pt,
+  before skip=4pt,
+  after skip=4pt,
+  breakable,
+  enhanced
+}
 \hypersetup{
   colorlinks=true,
   linkcolor=blue!50!black,
   urlcolor=blue!50!black,
   citecolor=blue!50!black
 }
-
-\linespread{0.985}
-\raggedbottom
-\setlength{\parskip}{0pt}
-\setlength{\parindent}{1em}
-\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
-\setlength{\floatsep}{7pt plus 2pt minus 2pt}
-\setlength{\intextsep}{7pt plus 2pt minus 2pt}
-\setlength{\abovecaptionskip}{3pt}
-\setlength{\belowcaptionskip}{0pt}
-\setlength{\tabcolsep}{4.5pt}
-\setlist[itemize]{leftmargin=1.25em,itemsep=0.05em,topsep=0.15em,parsep=0pt,partopsep=0pt}
-\setlist[enumerate]{leftmargin=1.45em,itemsep=0.05em,topsep=0.15em,parsep=0pt,partopsep=0pt}
-\renewcommand{\arraystretch}{1.08}
-\captionsetup{font=small,labelfont=bf,skip=3pt}
-\captionsetup[figure]{skip=6pt}
-\titleformat{\section}{\Large\bfseries}{\thesection}{0.8em}{}
-\titleformat{\subsection}{\large\bfseries}{\thesubsection}{0.8em}{}
-\titleformat{\subsubsection}{\normalsize\bfseries}{\thesubsubsection}{0.8em}{}
-\titlespacing*{\section}{0pt}{1.4ex plus 0.4ex minus 0.2ex}{0.8ex plus 0.2ex}
-\titlespacing*{\subsection}{0pt}{1.0ex plus 0.3ex minus 0.2ex}{0.55ex plus 0.2ex}
-\titlespacing*{\subsubsection}{0pt}{0.8ex plus 0.2ex minus 0.1ex}{0.4ex plus 0.1ex}
-\titlespacing*{\paragraph}{0pt}{0.65ex plus 0.2ex minus 0.1ex}{0.8em}
 
 \newcommand{\code}[1]{\texttt{#1}}
 \newcolumntype{Y}{>{\raggedright\arraybackslash}X}
@@ -86,7 +69,7 @@
 }
 \emergencystretch=6em
 
-\title{NightTrap: A Benchmark for Night Camera-Trap Review Pipelines}
+\title{NightTrap: A Workflow-Structured Benchmark for Night Camera-Trap Triage in Ecological Monitoring}
 \author{Anonymous submission}
 \date{}
 
@@ -94,7 +77,7 @@
 \maketitle
 
 \begin{abstract}
-Camera traps are widely used for wildlife monitoring, but their outputs still require substantial human review. In practice, review is not a single-image species-classification problem, but a multi-step workflow. Reviewers need to decide whether an image or event is empty, whether the visual evidence is usable, which species is present, how many animals are visible, and which events should enter the human-review queue. Night data makes this workflow more difficult because infrared imaging, low illumination, motion blur, overexposure, near-black frames, and occlusion can all reduce visual evidence. We introduce NightTrap, a benchmark for evaluating night camera-trap review pipelines. The task design is supported by a questionnaire targeting ecological researchers, protected-area staff, and long-term users of camera-trap data, rather than being directly derived from generic vision tasks. NightTrap is built from 68,187 night events across 2,902 camera sites and organizes review into five tasks: Image usability filtering, Empty-event filtering, Species classification, Count-bin classification, and Needs-review recommendation. Empty filtering, species classification, and counting are not claimed as new tasks. The contribution of NightTrap is to organize these established but scattered steps into a night review pipeline and to evaluate whether models can assist human review.
+Camera traps are central to biodiversity monitoring and conservation, but night deployments produce large volumes of infrared and low-light events that still require human review. We introduce \textbf{NightTrap}, a workflow-structured benchmark for night camera-trap triage in ecological monitoring. NightTrap is built from \textbf{68,187 night events across 2,902 camera sites} and evaluates five review decisions: whether visual evidence is usable, whether an event is safely empty, which species is present, how many animals are visible, and whether the event should enter a human review queue. The benchmark separates recognition accuracy from operational triage metrics, including queue-front enrichment and recall-constrained safe auto-pass. Experiments with open-source vision-language models, supervised vision baselines, lightweight rankers, and camera-trap screening methods show that current models can enrich human review queues but cannot safely replace expert inspection. NightTrap also exposes a key deployment risk: site-history context can support review routing, but it can also create shortcut behavior unless Visual Only, Context Only, Combined, and Shortcut Check settings are reported together.
 \end{abstract}
 
 \section{Introduction}
@@ -106,7 +89,7 @@ Camera traps are an important tool for wildlife monitoring. They can be deployed
 Night camera-trap data makes this workflow harder. Compared with daytime images, night images often lose color and texture information and rely on infrared or low-light imaging. Animals may appear only as weak silhouettes; nearby animals may be overexposed by infrared illumination; distant animals may be too dark to identify; and moving animals can be blurred. For this reason, the first question in night review is often not ``what species is this?'', but ``is there enough visual evidence to make a reliable judgment?''
 
 % 已有相机陷阱 benchmark 已经研究动物存在判断、空图过滤、物种分类、数量估计和跨相机点位泛化。这些任务重要，但它们通常作为孤立识别任务评估。真实夜间审核更接近一个流程：先判断图像证据是否可用，再判断是否为空，再识别动物类别和数量，最后判断哪些事件应当排到人工审核队列前端。
-Existing camera-trap benchmarks have studied animal presence, empty filtering, species classification, counting, and generalization to unseen camera sites \citep{norouzzadeh2017snapshot,schneider2018camera,choinski2021first,beery2019iwildcam,koh2021wilds}. These tasks are important, but they are often evaluated as isolated recognition tasks. Real night review is a pipeline: reviewers first decide whether evidence is usable, then whether the event is empty, then which species and count are present, and finally which events require human attention rather than being deprioritized for later review. Table~\ref{tab:related-work-matrix} summarizes this coverage gap.
+Prior camera-trap datasets, challenges, and recognition pipelines have studied animal presence, empty filtering, species classification, counting, and generalization to unseen camera sites \citep{norouzzadeh2017snapshot,beery2019iwildcam,koh2021wilds,schneider2018camera,choinski2021first}. These tasks are important, but they are often evaluated as isolated recognition tasks. Real night review is sequential: reviewers first decide whether evidence is usable, then whether the event is empty, then which species and count are present, and finally which events require human attention rather than being deprioritized for later review. NightTrap follows this order, but the main results evaluate the decision points separately rather than making one all-in-one score the central result. Table~\ref{tab:related-work-matrix} summarizes this coverage gap.
 
 \begin{table}[t]
 \centering
@@ -128,61 +111,43 @@ NightTrap (ours) & \yesmark & \yesmark & \yesmark & \yesmark & \nomark & \yesmar
 \end{table}
 
 % 为了启发这一流程设计，我们进行了面向生态监测相关人群的小规模问卷调研。问卷问题和完整统计放在附录。问卷共收集 17 份有效身份信息，其中 52.94% 为高校/科研院所在校学生，5.88% 为政府保护部门或保护区管理人员，11.76% 为民间保护组织工作人员/管理者，11.76% 为长期志愿者或独立研究者，17.65% 为其他相关身份。70.59% 的受访者表示经常或偶尔使用自动监测设备，另外 29.41% 虽未使用但有兴趣了解。
-To motivate the workflow design, we conducted a small questionnaire targeting people connected to ecological monitoring. The full questionnaire and statistics are provided in the appendix. The questionnaire collected 17 valid responses on respondent identity: 52.94\% were university or research-institute students, 5.88\% were government conservation or protected-area staff, 11.76\% were staff or managers from civil conservation organizations, 11.76\% were long-term volunteers or independent researchers, and 17.65\% selected other related roles. Among all respondents, 70.59\% reported that they use automatic monitoring devices frequently or occasionally, while another 29.41\% did not currently use them but were interested in learning about them.
+To motivate the workflow design, we conducted a small questionnaire targeting people connected to ecological monitoring; the full instrument and statistics are in the appendix. The responses support the workflow framing: respondents emphasized poor image quality, excessive data volume, counting difficulty, and expert confirmation rather than full automation. We use the questionnaire only as task-design motivation, not as large-scale user-study evidence.
 
 % 小规模问卷提示，受访者遇到的主要困难与完整审核流程一致，而不是只集中在“识别物种”一个问题上。在监测数据处理困难中，83.33% 的受访者选择“照片质量差，难以辨认”，58.33% 选择“数据量太大，人工看不过来”，58.33% 选择“想统计动物数量，但不知道怎么避免重复计数”，50.00% 选择“想知道动物行为，但缺乏系统方法”。这些回答用于启发任务组织，而不是作为大规模用户研究证据。
-In this small sample, respondents' difficulties align with a full review workflow rather than a single species-identification problem. When asked about the main difficulties in processing monitoring data, 83.33\% selected poor photo quality as a major issue, 58.33\% selected excessive data volume, 58.33\% selected difficulty in counting animals without repeated counting, and 50.00\% selected the lack of a systematic method for understanding animal behavior. We use these responses to motivate the task organization, not as large-scale user-study evidence.
-
-% 更重要的是，问卷显示用户并不希望模型完全替代专家。对于受访者打分最高的功能，54.55% 希望其主要解决“数据量太大看不过来”的问题，27.3% 希望其帮助标准化团队工作流程。63.64% 希望工具输出候选列表和置信度，36.36% 希望生成详细分析报告，0% 希望直接给出最终答案。对于结果使用方式，81.82% 认为必须由本人或专家最终确认后才能使用，18.18% 接受高置信度自动通过、低置信度人工确认，0% 选择完全自动即可。
-More importantly, respondents did not want a model to fully replace experts. For the functions they rated highest, 54.55\% expected the tool to primarily reduce the burden of excessive data volume, and 27.3\% expected it to standardize team workflows. In terms of output format, 63.64\% preferred candidate lists with confidence scores, 36.36\% preferred detailed analysis reports, and 0\% preferred direct final answers. For how results should be used, 81.82\% stated that outputs must be confirmed by themselves or by experts before use, 18.18\% accepted automatic pass only for high-confidence cases with low-confidence cases sent to humans, and 0\% selected full automation.
-
 % 受这些调查结果启发，NightTrap 将夜间相机陷阱审核组织为五个任务：Image usability filtering、Empty-event filtering、Species classification、Count-bin classification 和 Needs-review recommendation。它们分别对应问卷中反复出现的审核环节：低质量图像判断、无效或空触发过滤、物种识别、数量估计，以及在有限人工审核预算下发现需要人工审核的事件。空图过滤、动物分类和数量估计本身并非全新任务。NightTrap 的贡献是将这些已有但分散的环节组织为一个夜间审核流程，并评估模型能否协助人工审核。
-Motivated by these responses, NightTrap organizes night camera-trap review into five tasks: Image usability filtering, Empty-event filtering, Species classification, Count-bin classification, and Needs-review recommendation. These tasks correspond to recurring review steps in the questionnaire: judging low-quality visual evidence, filtering invalid or empty triggers, identifying species, estimating counts, and deciding which events require human review under limited review budgets. Empty filtering, species classification, and counting are not claimed as new tasks. The contribution of NightTrap is to organize these established but scattered steps into a night review pipeline and to evaluate whether models can assist human review.
+Motivated by these responses, NightTrap organizes night camera-trap review into five tasks: Image usability filtering, Empty-event filtering, Species classification, Count-bin classification, and Needs-review recommendation. These tasks correspond to recurring review steps in the questionnaire: judging low-quality visual evidence, filtering invalid or empty triggers, identifying species, estimating counts, and deciding which events require human review under limited review budgets. Empty filtering, species classification, and counting are not claimed as new tasks. The contribution of NightTrap is to make these established but scattered steps comparable under one night-review setting and to evaluate whether models can assist human review.
 
 % 本文实验也围绕这一需求展开：模型能否完成基础筛查和识别，并在有限人工审核预算下把更需要人工查看的事件排到前面。我们因此同时报告分类指标、排序指标和 safe auto-pass 指标，以区分“协助审核排序”和“安全减少人工工作量”这两种不同能力。
 Our experiments follow the same need: can models perform basic filtering and recognition, and then recommend which events need human attention under limited review budgets? We therefore report classification metrics, review-score ranking metrics, and safe auto-pass metrics, so that review assistance through queue ordering can be distinguished from safe workload reduction.
 
 % 总结起来，本文的主要贡献如下：
-To summarize, our main contributions are:
-\begin{enumerate}
-
-    \item We introduce \textbf{NightTrap}, a night camera-trap review benchmark built from 68,187 night events across 2,902 camera sites, designed to evaluate the full human review workflow rather than isolated species recognition.
-
-    \item We organize night review into five linked tasks---image usability, empty-event filtering, species classification, count-bin classification, and needs-review recommendation---so that models can be evaluated at the same decision points used by human reviewers.
-
-    \item We define a practical needs-review recommendation task with review-queue metrics and recall-constrained safe auto-pass analysis, distinguishing queue ordering from safe automatic pass-through.
-
-    \item We evaluate closed-source references, open-source VLMs, and camera-trap baselines, revealing five actionable findings: long-tail species failures, the importance of image usability, limited safe auto-pass, shortcut risk from site context, and the boundary between detector screening and full review.
-
-\end{enumerate}
+NightTrap contributes a frozen benchmark of 68,187 night events across 2,902 camera sites, five review-facing tasks, and a Task 5 needs-review setting that separates queue ordering from recall-constrained safe auto-pass. We evaluate open-source VLMs, supervised vision baselines, lightweight rankers, camera-trap screening methods, and closed-source reference rows. The results show long-tail species failures, the importance of image usability, limited safe auto-pass, shortcut risk from site context, and the need to report decision points separately rather than relying on one all-in-one score.
 \section{Related Work}
 
 \subsection{Existing Camera-Trap Datasets and Benchmarks}
 
 % 相机陷阱数据集。早期相机陷阱 benchmark 主要关注动物存在判断、物种识别、计数和跨相机泛化。Snapshot Serengeti 证明了深度学习可以在大规模相机陷阱图像上进行自动动物识别、计数和描述；Caltech Camera Traps、iWildCam 和 WILDS-iWildCam 进一步强调，相机陷阱数据存在显著的点位偏移和背景记忆问题，因此不能只依赖随机划分评估模型。
-Camera-trap datasets. Existing camera-trap benchmarks mainly focus on animal presence, species recognition, counting, and cross-camera generalization. Snapshot Serengeti showed that deep learning can automatically identify, count, and describe wild animals in large-scale camera-trap images \citep{norouzzadeh2017snapshot}. Caltech Camera Traps, iWildCam, and WILDS-iWildCam further emphasize that camera-trap data contains strong site-level distribution shifts and background memorization risks, making random splits insufficient for evaluating real deployment performance \citep{beery2019iwildcam,koh2021wilds}. This follows a broader benchmark-design pattern in vision and language: useful benchmarks specify task definitions, splits, and metrics rather than only collecting images or prompts \citep{deng2009imagenet,lin2014coco,wang2019glue,rajpurkar2016squad,hu2020ogb}.
+Prior camera-trap datasets, challenges, and recognition pipelines mainly focus on animal presence, species recognition, counting, and cross-camera generalization. Snapshot Serengeti showed that deep learning can identify, count, and describe wild animals in large camera-trap collections \citep{norouzzadeh2017snapshot}. Caltech Camera Traps, iWildCam, and WILDS-iWildCam further emphasize site-level distribution shift and background memorization risks, making random splits insufficient for deployment-oriented evaluation \citep{beery2019iwildcam,koh2021wilds}. Detector and classifier pipelines are also central to practical camera-trap review, because they can filter empty images, localize animals, and support downstream classification \citep{schneider2018camera,choinski2021first,gomez2016towards,beery2019pipeline}. NightTrap builds on this line of work, but evaluates the surrounding night-review decisions in addition to species recognition.
 
 % 检测和分类。另一类工作将相机陷阱审核转化为检测或分类问题。检测模型可以过滤空图、定位动物并支持后续分类；分类模型可以识别常见物种并减少人工标注量。这些工作对生态监测非常重要，但任务通常以单图识别、检测或分类为核心，缺少对夜间审核流程中“图像是否可判读”“事件是否需要优先人工查看”等前后衔接环节的统一建模。
-Detection and classification. Another line of work formulates camera-trap review as object detection or classification. Detection models can filter empty images, localize animals, and support downstream classification, while classification models can identify common species and reduce manual labeling effort \citep{schneider2018camera,choinski2021first,gomez2016towards}. These works are important for ecological monitoring, but they usually center on single-image detection or recognition. They do not jointly model the surrounding review steps, such as whether the image evidence is usable or whether an event should be moved earlier in a human review queue.
-
-Detector-crop and retrieval baselines. Practical camera-trap systems often use detector crops before species classification: a detector proposes animal regions, and a downstream classifier or reviewer handles the cropped evidence \citep{beery2019pipeline,schneider2018camera}. Recent representation models such as CLIP and DINOv2 also make kNN retrieval or linear-probe baselines attractive, because they test whether frozen visual features already separate species before a task-specific VLM is introduced \citep{radford2021clip,oquab2023dinov2}. Supervised visual backbones such as ViT and ConvNeXt provide complementary task-specific baselines \citep{dosovitskiy2021vit,liu2022convnext}, while long-tail recognition work motivates reporting balanced metrics rather than only aggregate accuracy \citep{gupta2019lvis,vanhorn2018inaturalist,lin2017focalloss}. Knowledge-augmented zero-shot systems such as WildMatch push in a related direction by generating animal descriptions and matching them to external species knowledge \citep{fabian2023wildmatch}. These methods are complementary to NightTrap: they are important baselines for the species and count steps, while NightTrap evaluates the larger night-review workflow around those recognition decisions.
+Recent representation models such as CLIP and DINOv2 make retrieval or linear-probe baselines attractive for camera-trap species recognition, while supervised backbones such as ViT and ConvNeXt provide task-specific visual baselines \citep{radford2021clip,oquab2023dinov2,dosovitskiy2021vit,liu2022convnext}. Long-tail recognition work motivates reporting balanced metrics rather than only aggregate accuracy \citep{gupta2019lvis,vanhorn2018inaturalist,lin2017focalloss}. These methods are complementary to NightTrap: they are important baselines for the recognition steps, while the benchmark asks how recognition fits into triage decisions around usable evidence, empty screening, count bins, and review queues.
 
 
 
 \subsection{Animal-Centric Vision and Multimodal Benchmarks}
 
 % 动物视觉理解 benchmark。近年来的动物中心 benchmark 覆盖了更丰富的动物视觉理解任务。例如 Animal-Bench 评估多模态视频模型的动物中心理解能力，Animal Kingdom 关注动物行为理解，MammalNet 提供大规模哺乳动物识别和行为理解视频 benchmark。这些数据集拓展了动物视觉理解的范围，但它们通常不面向相机陷阱审核流程，也不将空图过滤、坏图过滤、数量分档和优先审核排序作为统一评估链条。
-Animal-centric vision benchmarks. Recent animal-centric benchmarks cover a broader range of animal understanding tasks. Animal-Bench evaluates animal-centered video understanding for multimodal video models \citep{jing2024animalbench}; Animal Kingdom focuses on animal behavior understanding \citep{ng2022animalkingdom}; and MammalNet provides a large-scale video benchmark for mammal recognition and behavior understanding \citep{chen2023mammalnet}. These benchmarks broaden the scope of animal visual understanding, but they are not designed around camera-trap review workflows. In particular, they do not unify empty filtering, image usability filtering, count-bin classification, and needs-review recommendation as one evaluation pipeline.
+Animal-Bench, Animal Kingdom, and MammalNet broaden animal visual understanding beyond static species recognition, including video and behavior tasks \citep{jing2024animalbench,ng2022animalkingdom,chen2023mammalnet}. These benchmarks are valuable, but they are not designed around camera-trap review triage. In particular, they do not combine empty filtering, image usability filtering, count-bin classification, and needs-review recommendation in the same night-review setting.
 
 
 
 \subsection{Camera-Trap Review Systems and Automation Methods}
 
 % 自动审核系统。相机陷阱审核系统通常将检测器、分类器和人工复核结合起来，以减少空图和低价值图像带来的人工负担。典型流程包括先检测动物，再分类物种，最后将低置信度或高风险样本交给人工确认。这些系统说明实际部署并不追求模型完全替代专家，而是追求减少人工负担和提高审核效率。
-Automated review systems. Camera-trap review systems often combine detectors, classifiers, and human verification to reduce the manual burden caused by empty or low-value images. A typical pipeline first detects animals, then classifies species, and finally sends low-confidence or high-risk samples to human reviewers \citep{beery2019pipeline}. These systems show that real deployment does not necessarily aim to replace experts fully; it aims to reduce review burden and improve review efficiency.
+Camera-trap review systems often combine detectors, classifiers, and human verification to reduce the burden of empty or low-value images. A typical system detects animals, classifies species, and sends low-confidence or high-risk samples to human reviewers \citep{beery2019pipeline}. This deployment pattern motivates our distinction between queue ordering and safe automatic pass-through.
 
 % 零样本和 VLM 方法。随着 VLM 和大模型的发展，研究者开始探索用零样本或少样本方式处理相机陷阱图像。此类方法具有灵活性，可以通过自然语言 prompt 输出物种、数量、行为或不确定性描述，但也容易受到视觉证据不足、长尾物种、红外图像分布偏移和上下文捷径的影响。
-Zero-shot and VLM-based methods. With the development of VLMs and large language models, researchers have begun to explore zero-shot or few-shot camera-trap image categorization \citep{vyskocil2024zeroshot}. General VLM systems show that language-conditioned visual reasoning can be transferred across tasks \citep{radford2021clip,alayrac2022flamingo,li2023blip2}, but benchmark design still has to separate visual evidence from answer-revealing context. These methods are flexible because they can use natural language prompts to produce species labels, counts, behavior descriptions, or uncertainty estimates. However, they are also vulnerable to insufficient visual evidence, long-tailed species, infrared appearance shifts, and context shortcuts.
+Zero-shot and multimodal foundation-model methods are increasingly used for flexible camera-trap categorization \citep{fabian2023wildmatch,vyskocil2024zeroshot}. General VLM systems can transfer language-conditioned visual reasoning across tasks \citep{radford2021clip,alayrac2022flamingo,li2023blip2}, but benchmark design still has to separate visual evidence from answer-revealing context. NightTrap therefore includes Visual Only, Context Only, Combined, and Shortcut Check settings for needs-review routing.
 
 Table~\ref{tab:related-work-matrix} gives a compact coverage comparison. The main difference is that NightTrap is not only a species-recognition benchmark: it evaluates the surrounding night-review steps that determine whether an event is usable, safely empty, countable, and worth sending to a human reviewer.
 \section{NightTrap Benchmark}
@@ -194,20 +159,20 @@ An \textbf{event} is a trigger burst or grouped camera-trap record from one came
 \begin{figure*}[t]
     \centering
     \includegraphics[width=\textwidth]{figures/nighttrap_benchmark_overview_final.png}
-    \caption{NightTrap benchmark overview. The figure summarizes the design motivation, benchmark construction phase, event-level evaluation phase, and needs-review routing checks. The questionnaire is used only as small-sample task-design motivation; benchmark labels and experimental results are built from the frozen night-event catalog and task-specific construction pipelines.}
+\caption{NightTrap benchmark overview. The figure summarizes the design motivation, benchmark construction phase, event-level evaluation phase, and needs-review routing checks. The questionnaire is used only as small-sample task-design motivation; benchmark labels and experimental results are built from the frozen night-event catalog and task-specific construction scripts.}
     \label{fig:nighttrap_benchmark_overview}
 \end{figure*}
 
-\subsection{Data construction pipeline}
+\subsection{Data construction}
 
 \paragraph{Data sources and frozen event catalog.}
-NightTrap is built from four established camera-trap sources: Caltech Camera Traps, Snapshot Serengeti, WCS Camera Traps, and Idaho Camera Traps. We first convert the raw assets into a normalized relational inventory. The inventory contains an event table, a frame table, and lookup tables for source dataset, camera site, species, time, sensor mode, and visibility status. This structure follows dataset-documentation recommendations that emphasize data provenance, intended use, and known limitations \citep{gebru2021datasheets,bender2018datastatements,mitchell2019modelcards}. It is used only for construction and auditing; models never see database internals. The released benchmark uses a frozen night-event catalog derived from this inventory after night filtering, path validation, event deduplication, and fixed image-slot construction. The final catalog contains \textbf{68,187 night events}, \textbf{115,617 frame records}, \textbf{2,902 camera sites}, and \textbf{283 species}. We define a camera site as the pair of source dataset and source location identifier, because location identifiers are not globally unique across datasets.
+NightTrap is built from four established camera-trap sources: Caltech Camera Traps, Snapshot Serengeti, WCS Camera Traps, and Idaho Camera Traps. We first convert the raw assets into a normalized relational inventory. The inventory contains an event table, a frame table, and lookup tables for source dataset, camera site, species, time, sensor mode, and visibility status. This structure follows dataset-documentation recommendations that emphasize data provenance, intended use, and known limitations \citep{gebru2021datasheets,bender2018datastatements}. It is used only for construction and auditing; models never see database internals. The released benchmark uses a frozen night-event catalog derived from this inventory after night filtering, path validation, event deduplication, and fixed image-slot construction. The final catalog contains \textbf{68,187 night events}, \textbf{115,617 frame records}, \textbf{2,902 camera sites}, and \textbf{283 species}. We define a camera site as the pair of source dataset and source location identifier, because location identifiers are not globally unique across datasets.
 
 \paragraph{Night filtering and event representation.}
 We use the catalog field \texttt{time\_of\_day\_bucket = night} to select nocturnal events. Each event keeps up to three fixed image slots: first, middle, and last. This matches how reviewers inspect a trigger burst, but it should not be over-interpreted as uniformly rich temporal evidence. In the frozen catalog, \textbf{64.1\%} of events have identical image paths in all three slots, while \textbf{32.7\%} have three unique image paths. This is why the benchmark evaluates event-level review evidence rather than video understanding.
 
 \paragraph{Task-pool construction.}
-Each task is built from the frozen event catalog but uses the most reliable label source for that decision. \textbf{Empty filtering} is built from a MegaDetector-v5a-assisted empty-event asset pool and then rejoined to the frozen catalog. We use two labels: \texttt{empty\_false\_trigger} and \texttt{nonempty\_or\_uncertain}. The latter intentionally includes uncertain animal cases, because the task is safe empty rejection rather than animal detection at all costs. \textbf{Species classification} uses closed-set species labels from night events, with dev/test labels required to appear in the training label set. \textbf{Count-bin classification} uses Snapshot Serengeti night events with count labels and maps exact counts into \texttt{1}, \texttt{2}, \texttt{3--5}, and \texttt{6+}. \textbf{Image usability filtering} is a hard evidence-quality set built from candidate examples of sufficient and insufficient visual evidence. \textbf{Needs-review recommendation} is built only from image-usable animal events, so low-quality images are handled upstream rather than being mixed into the human-review decision.
+Each task is built from the frozen event catalog but uses the most reliable label source for that decision. \textbf{Empty filtering} is built from a MegaDetector-v5a-assisted empty-event asset pool and then rejoined to the frozen catalog. Operationally, detector no-target events define the empty-candidate boundary, while target detections or missing detector status remain \texttt{nonempty\_or\_uncertain}. We use two labels: \texttt{empty\_false\_trigger} and \texttt{nonempty\_or\_uncertain}. The latter intentionally includes uncertain animal cases, because the task is safe empty rejection rather than animal detection at all costs. This detector-assisted construction is a known boundary of the task, so detector rows are treated as screening checks rather than detector-independent proof of true empty-event recognition. \textbf{Species classification} uses closed-set species labels from night events, with dev/test labels required to appear in the training label set. \textbf{Count-bin classification} uses Snapshot Serengeti night events with count labels and maps exact counts into \texttt{1}, \texttt{2}, \texttt{3--5}, and \texttt{6+}; it is therefore a source-constrained count task rather than a claim of cross-source counting coverage. \textbf{Image usability filtering} is a hard evidence-quality set built from candidate examples of sufficient and insufficient visual evidence. \textbf{Needs-review recommendation} is built only from image-usable animal events, so low-quality images are handled upstream rather than being mixed into the human-review decision.
 
 \paragraph{Splits and leakage control.}
 All A/B/C task splits are site-disjoint and audited for event, site, and image overlap. Needs-review recommendation uses stricter controls because site context is part of the input. For each target event, the site reference history is built only from earlier events at the same site. The target event itself and future events are excluded. Missing reference history is not backfilled from the full catalog. This prevents the benchmark from turning site context into a hidden answer key.
@@ -258,62 +223,37 @@ Needs-review & event & 6,000 & 480 & routine vs. needs-review \\
 
 \subsection{Review workflow tasks}
 
-NightTrap reports five evaluation tasks. Several of these tasks have precedent in prior camera-trap work; our contribution is to connect them as one reproducible night review workflow and to expose where current models fail under night imaging constraints. For classification tasks, we use Accuracy as the overall fraction of correct predictions and macro-averaged F1 (Macro-F1) to measure performance under class imbalance, because each class contributes equally regardless of frequency.
+NightTrap reports five evaluation tasks. Several of these tasks have precedent in prior camera-trap work; our contribution is to place them in one reproducible night review setting and to expose where current models fail under night imaging constraints. The main evidence is task-level, because a single all-in-one score hides whether a model fails at evidence quality, empty filtering, species recognition, counting, or routing. For classification tasks, we use Accuracy as the overall fraction of correct predictions and macro-averaged F1 (Macro-F1) to measure performance under class imbalance, because each class contributes equally regardless of frequency.
 
-\paragraph{Image usability filtering.}
-\textbf{Objective.} This task asks whether the visual evidence is sufficient for downstream review. It is not an animal-presence task: a usable image may be empty, and an unusable image may contain an animal that is near-black, severely blurred, occluded, or overexposed.
-\textbf{Construction.} We build a hard evidence-quality set from candidate examples of sufficient and insufficient visual evidence. Simple image-quality features, such as brightness, saturation, local overexposure, contrast, and sharpness, are used only to surface candidate failures and boundary cases. Final labels are assigned at the review-decision level rather than copied from these screening rules.
-\textbf{Metric.} We report Accuracy and Macro-F1. Macro-F1 is important because the benchmark must measure both usable and unusable evidence, rather than rewarding a model for predicting only the majority label.
-
-\paragraph{Empty-event filtering.}
-\textbf{Objective.} This task asks whether an event is a safe empty trigger: a visually judgeable event in which no valid animal subject is visible. It is not meant to find every possible animal; uncertain animal-like cases are treated conservatively.
-\textbf{Construction.} We start from a MegaDetector-v5a-assisted empty-event asset pool, match candidates back to the frozen night catalog, and use two labels: \texttt{empty\_false\_trigger} and \texttt{nonempty\_or\_uncertain}. The second label intentionally includes ambiguous cases because the intended operation is safe empty rejection rather than aggressive data deletion.
-\textbf{Metric.} We report Accuracy and Macro-F1 in the main table, with additional empty-recall details in the appendix. Macro-F1 prevents the large nonempty-or-uncertain class from hiding failures on the empty class.
-
-\paragraph{Species classification.}
-\textbf{Objective.} This task evaluates closed-set recognition of the main visible species in a night event under infrared, low-light, blur, and occlusion artifacts.
-\textbf{Construction.} We select night events with available species labels and valid image paths, restrict the task to labels with enough support for evaluation, and require dev/test species to appear in the training split. The released task contains 55 species and uses site-disjoint splits.
-\textbf{Metric.} We report Accuracy and Macro-F1. Accuracy shows the overall fraction of correct predictions, while Macro-F1 is the primary signal for long-tailed ecological labels because rare species should not disappear behind common-species accuracy.
-
-\paragraph{Count-bin classification.}
-\textbf{Objective.} This task estimates coarse visible-animal count ranges rather than exact counts. The label space is \texttt{1}, \texttt{2}, \texttt{3--5}, and \texttt{6+}.
-\textbf{Construction.} We use Snapshot Serengeti night events with count labels, because this source provides the most reliable count supervision in the catalog. Exact counts are mapped into bins to match practical review needs.
-\textbf{Metric.} We report Accuracy and Macro-F1. Coarse bins are intentional: night events often contain repeated frames, partial bodies, occlusion, and overlapping individuals, making exact individual counts less stable than practical count ranges.
-
-\paragraph{Needs-review recommendation.}
-\textbf{Objective.} This task asks whether an image-usable animal event should enter the human review queue. The main benchmark target is binary: a \texttt{routine} event maps to \texttt{needs\_review}=0, and a \texttt{review} event maps to \texttt{needs\_review}=1.
-\textbf{Construction.} We first remove events that belong to image-usability filtering, so the task is not driven by low-quality evidence. We then assign benchmark-defined binary labels from visible event evidence and allowed site-reference context. The 983-event hardset was constructed to support controlled image/context comparisons and queue-ordering checks, while the 6000-event routine-stress set is used as the main realistic review-queue setting because its needs-review base rate is 30\%.
-\textbf{Metric.} Models output both a binary decision and a continuous review score. We evaluate binary decisions with Accuracy and Macro-F1, and we evaluate review scores with P@K, Enrichment@K, AUROC/AUPRC where frozen continuous scores exist, and safe auto-pass under high needs-review recall. These metrics separate queue ordering from safe automatic pass-through.
-
-\paragraph{Input settings for needs-review recommendation.}
-Researchers do not review camera-trap events in a vacuum. They often know the site, season, and animals historically seen at that location. NightTrap simulates this lightweight reviewer knowledge while excluding fields that would reveal the answer, such as the current species label, novelty flag, rarity label, future events, or the gold decision. We use the same terminology for all needs-review experiments. \textbf{Image-only} means that the model sees only the current event images. \textbf{Context-lite-only} means that the model sees only allowed site-history context, including season and species previously observed at the same site, but no target-event images. \textbf{Full context-lite} means that the model sees both the current event images and the same allowed site-history context. The three settings are not three different tasks; they are controlled input views for testing whether a method uses current visual evidence, historical site priors, or both.
-
-\paragraph{Strict hardset and routine-stress set.}
-NightTrap uses three needs-review evaluation sets for different purposes. The \textbf{6000-event routine-stress set} is the main operational setting: it contains 4200 routine cases and 1800 review cases, so the needs-review base rate is 30\%. This setting is used for the headline queue result because it reflects a routine-heavy review queue where most image-usable animal events do not require immediate human review. The \textbf{983-event hardset} supports controlled image-only, context-lite-only, and full context-lite comparisons. After the binary collapse, it contains 140 routine cases and 843 needs-review positives, or 85.8\% positives. This high positive rate is intentional: the hardset is not a deployment base-rate estimate, but a stress test for input settings and queue ordering. The \textbf{913-event CLIP/context split} is a derived frozen subset used by supervised ranker checks, because the CLIP scripts retain only rows with available frozen image embeddings and valid context-lite features. We therefore do not compare 6000, 983, and 913 as if they were interchangeable leaderboards.
-
-The task table reports the 6000-event routine-stress set for Needs-review because that is the main review-queue setting. The 983-event hardset is retained for controlled input and queue-ordering checks in the appendix.
-
-\FloatBarrier
-\begin{figure}[!htbp]
+\begin{figure}[t]
 \centering
-\includegraphics[width=\textwidth]{figures/nighttrap_qa_examples_final.pdf}
-\caption{Representative NightTrap QA examples across the five tasks. Each card shows the input evidence, question, answer choices, and target answer used by one review step. Task 5 is shown with the binary routine-versus-review output; the 983-event hardset additionally supports queue-ordering checks through continuous review scores.}
+\includegraphics[width=0.95\linewidth]{figures/nighttrap_review_task_map.png}
+\caption{NightTrap review-task map. The benchmark organizes night camera-trap review into five decision points and reports task-level metrics rather than an unattended cascade score. Task 5 additionally separates Visual Only, Context Only, Combined, and Shortcut Check settings to test context-shortcut risk.}
+\label{fig:review_task_map}
+\end{figure}
+
+\paragraph{Task definitions.}
+\textbf{Image usability filtering} asks whether visual evidence is sufficient for downstream review. It is not an animal-presence task: a usable image may be empty, and an unusable image may still contain an animal that is too dark, blurred, occluded, or overexposed. \textbf{Empty-event filtering} asks whether an event is a safe empty trigger. We use \texttt{empty\_false\_trigger} versus \texttt{nonempty\_or\_uncertain} from a MegaDetector-v5a-assisted pool matched back to the frozen night catalog; ambiguous animal-like cases stay conservative, so detector rows are construction-boundary checks rather than detector-independent ceilings. \textbf{Species classification} is closed-set recognition over 55 night-event species with site-disjoint splits. \textbf{Count-bin classification} uses Snapshot Serengeti night events and maps counts to \texttt{1}, \texttt{2}, \texttt{3--5}, and \texttt{6+}; it is source-constrained rather than cross-source counting coverage. \textbf{Needs-review recommendation} asks whether an image-usable animal event should enter the human review queue. \texttt{routine} maps to \texttt{needs\_review}=0 and \texttt{review} to \texttt{needs\_review}=1. These labels are a fixed review-routing rule, not universal ecological truth or expert consensus. Classification tasks report Accuracy and Macro-F1; Task 5 additionally reports P@K, Enrichment@K, AUROC/AUPRC where available, NDCG, and high-recall safe auto-pass.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.95\linewidth]{figures/nighttrap_qa_examples_final.pdf}
+\caption{Representative NightTrap QA examples across the five review tasks. Each card shows the released question format, answer choices, and target answer for one decision point; Task 5 uses binary routine-versus-review output plus continuous review scores for queue ordering.}
 \label{fig:qa_examples}
 \end{figure}
 
+\paragraph{Task 5 input settings and sets.}
+For needs-review recommendation, NightTrap simulates lightweight reviewer knowledge while excluding answer-revealing fields such as the current species label, novelty flag, rarity label, future events, or the gold decision. We use four controlled input views: \textbf{Visual Only}, \textbf{Context Only}, \textbf{Combined}, and \textbf{Shortcut Checks} with perturbed or reduced context. These are input settings, not different tasks.
+
+NightTrap uses four needs-review sets for different purposes. The \textbf{Main Queue Set} ($N=6000$) is the main queue benchmark with a 30\% needs-review base rate. The \textbf{Input Stress-Test} ($N=983$) is review-heavy, with 85.8\% positives after binary collapse, so it is not a deployment base-rate estimate. The \textbf{Ranker Sub-split} ($N=913$) is the frozen supervised-ranker subset with available CLIP embeddings and valid context features. The \textbf{Diagnostic Cascade} ($N=150$) is an all-in-one smoke check. These sets answer different questions and are not interchangeable leaderboards.
+
 \subsection{Distribution and annotation reliability}
 
-\paragraph{Long-tail and source heterogeneity.}
-NightTrap is not balanced to look clean. It preserves the heterogeneity of night camera-trap data. Source datasets differ in site density, species composition, geography, label granularity, and night imaging mode. WCS contributes most sites, while Caltech Camera Traps and Snapshot Serengeti contribute large event volumes. Species and sites are both long-tailed: the median species has 12 night events, and the median site has 5 night events. This is why we report Macro-F1, per-task checks, and ranking metrics rather than relying only on overall accuracy.
+NightTrap preserves source heterogeneity: datasets differ in site density, species composition, geography, label granularity, and night imaging mode. Species and sites are long-tailed, with a median of 12 night events per species and 5 night events per site, so we report Macro-F1, per-task checks, and ranking metrics rather than only accuracy.
 
-\paragraph{Image-usability reliability.}
-We use inter-annotator agreement (IAA) to check whether the usability boundary is reliable. The audit deliberately contains clear usable images, clear unusable images, and ambiguous boundary cases. As expected, agreement is only moderate for the three-way usable/unusable/uncertain labeling, because annotators may reasonably disagree on boundary cases. However, the operational decision used by the benchmark is binary: whether the image can be trusted for downstream review. Across 298 valid paired annotations, three-way agreement is 72.5\% with Cohen's $\kappa=0.441$. Excluding uncertain cases yields 98.5\% agreement with $\kappa=0.911$, and grouping uncertain with unsafe or boundary evidence yields 86.9\% agreement with $\kappa=0.703$. This means NightTrap does not claim perfect agreement on every boundary image; it uses IAA to show that the safety boundary between usable evidence and evidence that should not be trusted is reliable.
+For image usability, a paired audit gives 72.5\% three-way usable/unusable/uncertain agreement with Cohen's $\kappa=0.441$ across 298 valid annotations. The operational decision is binary: whether evidence can be trusted for downstream review. Excluding uncertain cases yields 98.5\% agreement with $\kappa=0.911$, and grouping uncertain with unsafe or boundary evidence yields 86.9\% agreement with $\kappa=0.703$.
 
-\paragraph{Needs-review label scope.}
-We do not claim that \texttt{review} is an expert ecological-review label. A complete ecological agreement study would require domain experts and a separate annotation setup. Instead, NightTrap treats \texttt{needs\_review} as a benchmark-defined human-review recommendation label and audits how sampled labels behave under relabeling with source species and count information. In a 100-event label-aware relabeling audit, the benchmark routine/review label was hidden while source species and count labels were shown; 98 rows were binary-evaluable and 2 were marked uncertain. Agreement was 54.1\% with Cohen's $\kappa=0.082$, with 49.0\% routine-label agreement and 59.2\% review-label agreement. This low agreement reinforces that needs-review is a subjective review-assistance target rather than expert ecological ground truth. The primary practical question remains the binary distinction between routine cases and events that need human review. This conservative framing is intentional: the task is designed to evaluate review assistance, not to replace ecological judgment.
-
-\paragraph{What the benchmark measures.}
-The resulting benchmark measures three practical questions. First, can a model safely separate empty triggers from events that should not be discarded? Second, can it make semantic judgments about species and count under night imaging constraints? Third, can it enrich needs-review events near the top of a queue using the current event and allowed site history, rather than answer-revealing fields? These are narrower than full ecological intelligence, but they are directly aligned with the workload bottlenecks of night camera-trap review.
+For needs-review, we do not claim that \texttt{review} is an expert ecological-review label. In a 100-event matched-context model-assisted audit, 98 rows were binary-evaluable and 2 were uncertain. Agreement with the benchmark rule was 64.3\% with Cohen's $\kappa=0.286$. This is a plausibility check, not a multi-expert agreement study, and it reinforces that needs-review should be judged by queue enrichment and safe auto-pass behavior.
 
 
 
@@ -324,59 +264,87 @@ The resulting benchmark measures three practical questions. First, can a model s
 \subsection{Experimental setup}
 
 \paragraph{Evaluation metrics.}
-NightTrap evaluates four review-workflow classification tasks and one human-review recommendation task. Image usability, Empty-event, Species, and Count-bin report Accuracy and Macro-F1, with Macro-F1 as the primary metric because night camera-trap labels are imbalanced and long-tailed \citep{lin2017focalloss,gupta2019lvis}. Needs-review recommendation uses review-queue operating metrics because the practical question is not only whether a single event receives the correct binary label, but whether a limited review budget sees the right events early. P@K is the fraction of needs-review events among the top K scored events. Enrichment@K is P@K divided by the positive base rate. NDCG follows the standard graded-ranking view of top-ranked utility \citep{jarvelin2002ndcg}, while AUROC and AUPRC support threshold-independent binary scoring under class imbalance \citep{davis2006prroc}. Safe auto-pass is a recall-constrained operating point: for a target needs-review recall $r$, it reports the largest fraction of events that can be automatically passed while maintaining recall at least $r$, following the selective-prediction principle that abstention and automation require their own operating analysis \citep{geifman2017selective}. These review-queue metrics complement Accuracy and Macro-F1; they are not proposed as replacement general-purpose metrics. Bootstrap intervals are reported only for result files that already contain them.
+NightTrap evaluates four review-workflow classification tasks and one human-review recommendation task. Image usability, Empty-event, Species, and Count-bin report Accuracy and Macro-F1, with Macro-F1 as the primary metric because night camera-trap labels are imbalanced and long-tailed \citep{lin2017focalloss,gupta2019lvis}. Needs-review recommendation is evaluated by the operational question each metric answers:
+\textbf{Binary decision} metrics test whether a model follows the fixed routine-versus-review rule. \textbf{Queue ordering} metrics test whether needs-review events appear near the top of a limited review queue: P@K reports top-queue precision, Enrichment@K divides P@K by the positive base rate, AUROC and AUPRC summarize threshold-independent binary scores under class imbalance \citep{davis2006prroc}, and NDCG is retained as a secondary graded-ranking check where continuous review scores are frozen \citep{jarvelin2002ndcg}. \textbf{Workload reduction} is measured by safe auto-pass: for a target needs-review recall $r$, it reports the largest fraction of events that can be automatically passed while maintaining recall at least $r$, following the selective-prediction principle that abstention and automation require their own operating analysis \citep{geifman2017selective}. These metrics are grouped by review use case rather than treated as one interchangeable score list. Selected bootstrap intervals for the main classification rows and needs-review queue metrics are reported in Appendix Tables~\ref{tab:main_classification_ci} and~\ref{tab:task5_bootstrap_ci}.
 
 \paragraph{Models.}
-We organize models by their role in the benchmark rather than by a single leaderboard. Closed-source VLMs are retained as reference rows, not reproducibility anchors. Open-source VLMs, including Qwen2-VL-2B and Qwen3-VL-8B, provide auditable multimodal baselines under the image-only, context-lite-only, or full context-lite input views defined above. NVILA-8B is reported separately as a tuned multimodal comparison: the checked local checkpoint is an NVILA-family VLM adapted from a pretrained NVILA/NVILA-Lite model on AnimalLLaMA data with a frozen SigLIP/ViT-style vision tower. It is not counted as a task-specific fine-tuned ViT or ConvNeXt classifier trained on NightTrap splits. Standard camera-trap and representation baselines include majority or random scoring, CLIP and DINOv2 linear probes, ViT-B/16 and ConvNeXt-Tiny task-specific supervised vision fine-tunes for the four classification tasks, detector-crop CLIP and DINOv2 species baselines with full-frame fallback, CLIP/context-lite logistic rankers, XGBoost and LightGBM needs-review ranker variants, rule-only checks, context-lite-only checks, and MegaDetector thresholding for the empty-event task \citep{radford2021clip,oquab2023dinov2,dosovitskiy2021vit,liu2022convnext,chen2016xgboost,ke2017lightgbm}. No dedicated needs-review fine-tuned vision baseline is included because needs-review is evaluated as a review-queue ranking task with context-lite inputs; supervised needs-review is covered by the CLIP/context-lite logistic ranker and ranker variants on the frozen 913-event split. The appendix gives full run details; the main text keeps only rows with frozen metrics that support the five benchmark questions.
+We group evaluated models by their role in the review workflow. Naive baselines include majority-class prediction, random scoring, and rule-only checks. Supervised vision baselines include CLIP and DINOv2 probes, ViT-B/16 and ConvNeXt-Tiny fine-tunes, detector-crop species baselines, and MegaDetector-assisted empty screening. VLM baselines include Qwen2-VL-2B and Qwen3-VL-8B without NightTrap-specific fine-tuning; GPT rows are retained only as closed-source exploratory references. Task-5 rankers include CLIP+Context logistic rankers, XGBoost~\citep{chen2016xgboost}, and LightGBM~\citep{ke2017lightgbm} variants. Full commands and run details are reported in the appendix.
 
 \subsection{Performance across question types}
 
-In Table~\ref{tab:workflow_main}, we compare model performance across the four NightTrap classification tasks. Closed-source, open-source, and conventional camera-trap baselines are shown in separate blocks so that capability comparisons do not mix reproducibility status with raw score differences.
+In Table~\ref{tab:workflow_main}, we compare representative model performance across the four NightTrap classification tasks. Closed-source, open-source, and conventional camera-trap baselines are shown separately so that capability comparisons do not mix reproducibility status with raw score differences.
 
-\input{results/nighttrap_tables/table_workflow_task_groups_v09}
+\begin{table}[t]
+\centering
+\caption{Representative classification results. Values are Macro-F1 percentages; Accuracy is reported in the full appendix tables.}
+\label{tab:workflow_main}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Model & Usability & Empty & Species & Count-bin \\
+\midrule
+GPT-5.4 reference & 79.04 & 81.68 & 34.13 & 64.48 \\
+Qwen2-VL-2B & 34.63 & 62.88 & 29.87 & 42.29 \\
+Qwen3-VL-8B & \textbf{83.64} & 75.24 & \textbf{48.09} & 58.66 \\
+CLIP linear probe & 68.20 & 75.25 & 35.58 & 49.06 \\
+Best supervised vision baseline & 81.78 & \textbf{80.13} & 39.50 & \textbf{59.70} \\
+\bottomrule
+\end{tabular}
+\end{table}
 
-The per-task best row is not a single model; full supervised rows are in the appendix. The first pattern is that easier-looking screening decisions are still not solved uniformly. Qwen3-VL-8B reaches the best open-source score on image usability, but the same model remains well below perfect on empty filtering. We therefore treat detector-assisted empty-pool construction as screening infrastructure rather than as detector-independent evidence that the empty-event task is solved. The second pattern is that species recognition remains the largest classification gap: Qwen3-VL-8B has high species Accuracy but much lower Macro-F1, indicating uneven behavior across long-tailed and ambiguous taxa. Count-bin classification is also difficult because multiple animals, overlapping bodies, and partial visibility turn simple recognition into event-level reasoning.
+\FloatBarrier
 
-Table~\ref{tab:needs_review_main} reports the needs-review setting separately and separates operational queue metrics from hardset input checks; Figure~\ref{fig:task5_core_performance} visualizes the core Task 5 metrics for the measured rows. The 6000-event routine-stress set is the main realistic queue setting, where routine events dominate and the positive class is binary \texttt{review}. The CLIP/context-lite, XGBoost, and LightGBM rows use the frozen 913-event split because the CLIP scripts keep only rows with available frozen image embeddings and valid context-lite features. The clean tree-ranker rows exclude audit flags, audit-only current-species support fields, and site common-species name expansion by default. A leakage check with the unfiltered context fields reached near-perfect scores because audit-only fields such as current-species month support and visual-driven flags reconstruct the label construction; those rows are retained only as an internal shortcut check and are not reported as deployable baselines. The 983-event hardset is retained as an input-setting and queue-ordering check, not as the primary fifth task.
+The per-task best row is not a single model; full supervised rows are in the appendix. The first pattern is that easier-looking screening decisions are still not solved uniformly. Qwen3-VL-8B reaches the best open-source score on image usability, but the same model remains well below perfect on empty filtering. We therefore treat detector-assisted empty-pool construction as screening infrastructure rather than as detector-independent evidence that the empty-event task is solved. The second pattern is that species recognition remains the largest classification gap: Qwen3-VL-8B has high species Accuracy but much lower Macro-F1, indicating uneven behavior across long-tailed and ambiguous taxa. The species interface also differs by model family: VLM rows answer the released four-choice species question, whereas supervised vision rows are closed-set classifiers over the species label set. We therefore avoid treating the VLM species row as a closed-set supervised ceiling; Appendix Table~\ref{tab:species_candidate_alignment} adds a candidate-set alignment diagnostic. Count-bin classification is also difficult because multiple animals, overlapping bodies, and partial visibility turn simple recognition into event-level reasoning.
 
-\input{results/nighttrap_tables/table_needs_review_dense_v09}
+A longer ConvNeXt-Tiny species convergence check improves the 2-epoch fine-tune from 21.34 to 36.75 Macro-F1, confirming that the initial short fine-tune underestimates what task-specific supervised training can do. This does not change the main best-supervised species row, because the DINOv2 full-frame linear probe remains higher at 39.50 Macro-F1, but it changes the interpretation: NightTrap should not be read as showing a blanket VLM advantage over supervised vision baselines. The stronger conclusion is narrower: current VLMs are competitive on some review decisions, while long-tail species Macro-F1 remains difficult for both VLM and supervised baselines.
+
+Table~\ref{tab:needs_review_main} reports Task 5 separately, and Figure~\ref{fig:task5_core_performance} visualizes the main queue metrics. The Main Queue Set is the realistic routine-heavy setting. Ranker rows use the frozen Ranker Sub-split because the CLIP scripts require available image embeddings and valid context features. Clean tree-ranker rows exclude audit flags, audit-only current-species support fields, and site common-species name expansion. The Input Stress-Test remains an input and queue-ordering diagnostic, not the primary fifth task.
+
+\begin{table}[t]
+\centering
+\caption{Representative needs-review results. These rows answer different questions and should not be read as one leaderboard.}
+\label{tab:needs_review_main}
+\small
+\begin{tabular}{llrrrr}
+\toprule
+Split & Model / input & Base & P@50 & Enrich@50 & Auto-pass@95R \\
+\midrule
+Main Queue & Qwen3-VL-8B, Combined & 30.00 & 66.00 & 2.20$\times$ & 7.42 \\
+Ranker Sub-split & XGBoost Visual Only & 25.30 & 56.00 & 2.21$\times$ & 3.40 \\
+Ranker Sub-split & LightGBM Visual Only & 25.30 & 54.00 & 2.13$\times$ & 4.27 \\
+Ranker Sub-split & CLIP+Context logistic & 25.30 & 32.00 & 1.26$\times$ & 8.43 \\
+Input Stress-Test & Qwen3-VL-8B, Combined & 85.76 & 66.00 & 0.77$\times$ & n/a \\
+Input Stress-Test & NVILA-8B, Combined & 85.76 & 78.00 & 0.91$\times$ & n/a \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
 
 \begin{figure}[!htbp]
 \centering
-\includegraphics[width=0.98\linewidth]{figures/nighttrap_task5_core_performance.pdf}
-\caption{Core performance for Task 5 needs-review recommendation. Panel A summarizes operational queue metrics for the 6000-event routine-stress row and 913-event supervised ranker checks; Panel B separately shows the 983-event hardset diagnostic. The panels are separated because the splits answer different questions and should not be read as one leaderboard.}
+\includegraphics[width=0.95\linewidth]{figures/nighttrap_task5_core_performance.pdf}
+\caption{Core Task 5 needs-review performance. Panel A summarizes operational queue metrics for the Main Queue Set and Ranker Sub-split checks; Panel B shows the Input Stress-Test diagnostic with its high P@50 base-rate reference.}
 \label{fig:task5_core_performance}
 \end{figure}
 
-\begin{figure}[!htbp]
-\centering
-\includegraphics[width=0.98\linewidth]{figures/nighttrap_radar_vlm_grid.pdf}
-\caption{VLM capability profiles across the four NightTrap classification tasks. Each panel uses the same axes and the same NightTrap overview palette; Accuracy and Macro-F1 are plotted separately to show the gap between overall correctness and balanced long-tail performance. Needs-review queue metrics are reported in Table~\ref{tab:needs_review_main}.}
-\label{fig:radar_vlm_grid}
-\end{figure}
+\FloatBarrier
 
-On the routine-stress set, Qwen3-VL-8B reaches P@50 of 66.00 at a 30.00 base rate, a 2.20$\times$ enrichment over random ranking. Its frozen choice probabilities also support threshold-independent binary scoring, with AUROC 57.88 and AUPRC 38.44 when using the total probability assigned to needs-review choices as the needs-review score. This is useful for queue ordering, but it is not the same as safe workload reduction: at 95\% needs-review recall, Qwen3-VL-8B automatically passes only 7.42\% of events, and at 98\% recall this falls to 3.35\%. The CLIP/context-lite logistic ranker passes 8.43\% and 4.27\% at the same recall targets on its frozen split. Current models therefore help decide what humans should see first more than they safely decide what humans never need to see.
+On the Main Queue Set, Qwen3-VL-8B reaches P@50 of 66.00 at a 30.00 base rate, a 2.20$\times$ enrichment over random ranking. Its needs-review score also gives AUROC 57.88 and AUPRC 38.44, while the P@50 bootstrap interval remains wide at [54.00, 78.00]. This is useful for queue ordering, but not the same as safe workload reduction: at 95\% needs-review recall, Qwen3-VL-8B automatically passes only 7.42\% of events, and at 98\% recall this falls to 3.35\%. The CLIP+Context logistic ranker passes 8.43\% and 4.27\% at the same recall targets on the Ranker Sub-split. Current models therefore help decide what humans should see first more than what humans never need to see, which is the intended distinction between review prioritization and automatic exclusion.
 
-\begin{appendixbox}[title={Key findings from NightTrap}]{NightTrapBlue}
-\small
-\textbf{Summary.} NightTrap exposes a review-workflow gap rather than only a recognition gap: evidence screening is necessary, species Accuracy can hide long-tail failures, site context is useful but shortcut-prone, and current VLMs are better at ordering review queues than safely replacing reviewers.
-\end{appendixbox}
+We also ran a 150-event all-in-one smoke check in which Qwen3-VL-8B had to output evidence quality, empty status, species, count bin, review decision, and a review score. After collapsing \texttt{review} and \texttt{priority\_review} into binary \texttt{needs\_review}, the model reaches 42.67\% Accuracy, 39.93\% Macro-F1, 54.11 AUROC, 64.87 AUPRC, and only 16.84\% needs-review recall; P@50 is 72.00\% at a 63.33\% base rate, or 1.14$\times$ enrichment. This diagnostic supports decision-point reporting because a single all-in-one score hides whether failure comes from visual evidence, empty filtering, species, count, or review routing. Full numbers are in Appendix~\ref{tab:end2end_smoke}.
 
 \subsection{Ablations and shortcut checks}
 
-Appendix Table~\ref{tab:ablation_diagnostics} condenses the v0.8 ablations and shortcut checks. Shuffled-context, context-lite-only, and site-frequency-only checks test whether models bind the right image to the right site history rather than exploiting priors. The event-representation ablation also shows that adding more image slots does not automatically add useful evidence: first-frame-only and three-slot mean pooling both reach P@50 of 40.00 on the CLIP needs-review split.
-
-Robustness checks show that imaging mode and source composition are part of the benchmark rather than nuisance metadata. Night-IR events reduce needs-review P@50 for Qwen3-VL-8B relative to night-color events, and count-bin evaluation is source-constrained because reliable count labels come from Snapshot Serengeti. The MegaDetector-assisted empty pool remains useful infrastructure, but its 100-item human audit is treated only as risk quantification, not detector-independent proof.
+Appendix Table~\ref{tab:ablation_diagnostics} condenses the ablations and shortcut checks. On the Ranker Sub-split, shuffled context reaches P@50 of 36.00 while the matched CLIP+Context logistic row reaches 32.00, and a site-frequency-only stress prior reaches P@50 of 64.00. We therefore treat site history as useful reviewer-side information with shortcut risk, not stable evidence of visual grounding. In practice, this means that context-aware models should be reported alongside visual-only and perturbed-context controls before they are used to route scarce expert attention. The remaining checks show that more image slots do not automatically help, night-IR changes needs-review behavior, count-bin evaluation is source-constrained, and the empty pool remains detector-assisted.
 
 \section{Conclusion}
 
 % NightTrap 评估夜间相机陷阱审核流程，包括五个任务：Image usability filtering、Empty-event filtering、Species classification、Count-bin classification 和 Needs-review recommendation。它将不可判读图像与空图分开，并且只在图像可判读的动物事件上评估人工审核推荐。
-We introduced NightTrap, a benchmark for evaluating night camera-trap review pipelines. Unlike species-only recognition benchmarks, NightTrap evaluates review as a linked workflow: models judge usable evidence, filter empty events, classify species, estimate count bins, and prioritize image-usable animal events for human review. This mirrors how night data is processed: an event may first be unusable, then empty, and only after those checks do species, count, and needs-review decisions become meaningful.
-
-Our evaluation shows that current VLMs can help order human review queues, but cannot yet decide safely which events never need review. Queue-front enrichment improves, while safe automatic pass-through remains small at high needs-review recall. Species accuracy can be much higher than Macro-F1, exposing long-tail failures behind strong aggregate accuracy. Context helps, but site history can resemble visual reasoning unless image-only, context-lite-only, shuffled-context, and site-frequency checks are reported together. NightTrap therefore frames near-term camera-trap AI as reviewer assistance: surfacing likely important events earlier, flagging weak evidence, and supporting expert confirmation rather than replacing it.
+NightTrap evaluates night camera-trap triage around species recognition: models judge usable evidence, filter empty events, classify species, estimate count bins, and prioritize image-usable animal events for human review. Its contribution is not a new species taxonomy or an unconstrained ecological reasoning task, but a workflow-structured benchmark that separates recognition, queue enrichment, and recall-constrained safe pass-through. Current VLMs can help order queues, but safe automatic pass-through remains small at high needs-review recall, and species accuracy can hide long-tail failures behind much lower Macro-F1. Site history is informative but shortcut-prone: in lightweight rankers, context can reduce early queue precision or underperform shuffled context, so context-aware review models need Visual Only, Context Only, Combined, and Shortcut Check settings. The all-in-one smoke check further shows why unattended full automation is unsafe. For deployment-oriented evaluation, the practical lesson is that camera-trap assistance should be reported as a set of operating points: what can be hidden, what should be surfaced early, and which failures remain visible to human reviewers. NightTrap makes these distinctions explicit so future systems can improve workflow value without turning a review-routing benchmark into an unsupported automation claim.
 
 \paragraph{Limitations and future work.}
-NightTrap has several limitations. The needs-review label is an operational review label rather than expert ecological ground truth; the low-agreement label-aware relabeling audit reinforces that this is a subjective review-assistance target, not a validation claim \citep{northcutt2021labelerrors}. The 6000-event routine-stress set is the main queue benchmark, while the 983-event hardset is a review-heavy input and queue-ordering check. Some VLM scores use frozen multiple-choice probabilities rather than a calibrated binary head, so they should not be read as deployment probabilities \citep{guo2017calibration}. NightTrap also focuses on night events and does not yet cover daytime review, behavior annotation, open-ended ecological reporting, or causal reasoning. Future work can extend NightTrap toward agentic review workflows: an agent could screen usability and empty triggers, retrieve site-history context, compare visually similar prior events, request human confirmation only for uncertain or high-value cases, and maintain an auditable review log to further reduce manual camera-trap review while keeping experts in the loop.
+The needs-review label is a review-routing label rather than expert ecological ground truth; the matched-context audit is model-assisted and single-annotator rather than a multi-expert agreement study \citep{northcutt2021labelerrors}. The Main Queue Set is the main queue benchmark, while the Input Stress-Test is a review-heavy input check. Count-bin evaluation is source-constrained, the empty-event set inherits risk from MegaDetector-assisted pool construction, and frozen VLM choice scores should not be read as calibrated deployment probabilities \citep{guo2017calibration}. NightTrap focuses on night events and does not yet cover daytime review, behavior annotation, open-ended ecological reporting, or causal reasoning. Because source datasets differ in camera placement, species vocabulary, and annotation conventions, benchmark results should also be interpreted as evidence about this normalized review workflow rather than as direct estimates of population abundance or ecological trend quality. The current tasks likewise evaluate event-level review decisions, not downstream ecological inference such as occupancy modeling, abundance estimation, or intervention planning. The present release evaluates fixed prompts and frozen model snapshots rather than adaptive review interfaces, so it should be read as a reproducible benchmark layer below any field deployment study. Future versions should add independent expert audits, external camera-site validation, stronger license and provenance reporting for upstream assets, and daytime/night transfer checks before treating review-routing scores as deployment-ready evidence.
 
 \clearpage
 \begingroup
@@ -391,12 +359,14 @@ Automatically Identifying, Counting, and Describing Wild Animals in Camera-Trap 
 \bibitem{schneider2018camera}
 S. Schneider, G. W. Taylor, and S. C. Kremer.
 Deep Learning Object Detection Methods for Ecological Camera Trap Data.
-\emph{Proceedings of the Conference on Computer and Robot Vision}, 2018.
+\emph{2018 15th Conference on Computer and Robot Vision (CRV)}, pp. 321--328, 2018.
+doi:10.1109/CRV.2018.00052.
 
 \bibitem{choinski2021first}
-M. Choinski, M. Rogowski, P. Tynecki, D. P. J. Kuijper, M. Churski, and J. W. Bubnicki.
+M. Choi{\'n}ski, M. Rogowski, P. Tynecki, D. P. J. Kuijper, M. Churski, and J. W. Bubnicki.
 A First Step Towards Automated Species Recognition from Camera Trap Images of Mammals Using AI in a European Temperate Forest.
-\emph{Proceedings of ICCS 2021 Workshops}, 2021.
+In \emph{Computer Information Systems and Industrial Management (CISIM 2021)}, Lecture Notes in Computer Science 12883, pp. 299--310. Springer, 2021.
+doi:10.1007/978-3-030-84340-3\_24.
 
 \bibitem{beery2019iwildcam}
 S. Beery, D. Morris, and P. Perona.
@@ -408,35 +378,11 @@ P. W. Koh et al.
 WILDS: A Benchmark of in-the-Wild Distribution Shifts.
 \emph{Proceedings of the International Conference on Machine Learning}, 2021.
 
-\bibitem{deng2009imagenet}
-J. Deng, W. Dong, R. Socher, L.-J. Li, K. Li, and L. Fei-Fei.
-ImageNet: A Large-Scale Hierarchical Image Database.
-\emph{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}, 2009.
-
-\bibitem{lin2014coco}
-T.-Y. Lin et al.
-Microsoft COCO: Common Objects in Context.
-\emph{Proceedings of the European Conference on Computer Vision}, 2014.
-
-\bibitem{wang2019glue}
-A. Wang, A. Singh, J. Michael, F. Hill, O. Levy, and S. Bowman.
-GLUE: A Multi-Task Benchmark and Analysis Platform for Natural Language Understanding.
-\emph{Proceedings of the International Conference on Learning Representations}, 2019.
-
-\bibitem{rajpurkar2016squad}
-P. Rajpurkar, J. Zhang, K. Lopyrev, and P. Liang.
-SQuAD: 100,000+ Questions for Machine Comprehension of Text.
-\emph{Proceedings of the Conference on Empirical Methods in Natural Language Processing}, 2016.
-
-\bibitem{hu2020ogb}
-W. Hu, M. Fey, M. Zitnik, Y. Dong, H. Ren, B. Liu, M. Catasta, and J. Leskovec.
-Open Graph Benchmark: Datasets for Machine Learning on Graphs.
-\emph{Advances in Neural Information Processing Systems}, 2020.
-
 \bibitem{gomez2016towards}
-A. Gomez, A. Salazar, and F. Vargas.
+A. Gomez Villa, A. Salazar, and F. Vargas.
 Towards Automatic Wild Animal Monitoring: Identification of Animal Species in Camera-trap Images Using Very Deep Convolutional Neural Networks.
 \emph{Ecological Informatics}, 41:24--32, 2017.
+doi:10.1016/j.ecoinf.2017.07.004.
 
 \bibitem{beery2019pipeline}
 S. Beery, D. Morris, and S. Yang.
@@ -451,7 +397,7 @@ Learning Transferable Visual Models From Natural Language Supervision.
 \bibitem{oquab2023dinov2}
 M. Oquab et al.
 DINOv2: Learning Robust Visual Features without Supervision.
-\emph{Transactions on Machine Learning Research}, 2023.
+\emph{Transactions on Machine Learning Research}, 2024.
 
 \bibitem{dosovitskiy2021vit}
 A. Dosovitskiy et al.
@@ -499,9 +445,10 @@ MammalNet: A Large-scale Video Benchmark for Mammal Recognition and Behavior Und
 \emph{Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition}, 2023.
 
 \bibitem{vyskocil2024zeroshot}
-J. Vyskocil and L. Picek.
+J. Vysko{\v{c}}il and L. Picek.
 Towards Zero-Shot Camera Trap Image Categorization.
-\emph{Proceedings of the European Conference on Computer Vision Workshops}, 2024.
+In \emph{Computer Vision -- ECCV 2024 Workshops}, pp. 37--53. Springer, 2024.
+doi:10.1007/978-3-031-92387-6\_3.
 
 \bibitem{alayrac2022flamingo}
 J.-B. Alayrac et al.
@@ -576,13 +523,13 @@ The appendix is organized around reproducibility and review use. Appendix~\ref{a
 \end{appendixbox}
 
 \begin{appendixbox}[title={How to read the needs-review tables}]{NightTrapGold}
-The appendix keeps three needs-review sample counts separate. The 6000-event routine-stress set is the main operational queue with a 30\% needs-review base rate. The 983-event hardset is a controlled, review-heavy input-setting check. The 913-event CLIP/context split is a supervised-ranker check retained after requiring frozen CLIP embeddings and valid context-lite features. These sets answer different questions and should not be merged into a single leaderboard.
+The appendix keeps the needs-review sample counts separate. The Main Queue Set ($N=6000$) is the main operational queue with a 30\% needs-review base rate. The Input Stress-Test ($N=983$) is a controlled, review-heavy input-setting check. The Ranker Sub-split ($N=913$) is a supervised-ranker check retained after requiring frozen CLIP embeddings and valid context features. The Diagnostic Cascade ($N=150$) is an all-in-one smoke check. These sets answer different questions and should not be merged into a single leaderboard.
 \end{appendixbox}
 
 \section{Artifact, Release, and Reproducibility}
 \label{app:release_reproducibility}
 
-NightTrap is a derived benchmark over existing camera-trap sources. The release provides benchmark metadata, task splits, labels, prompts, evaluation artifacts, Croissant metadata, and code, but it does not redistribute raw images whose source datasets impose independent access or license terms. Users obtain raw images from the original data providers and use the released metadata and scripts to rebuild benchmark views. The anonymous dataset repository is \url{https://huggingface.co/datasets/LohseRre/nighttrap-eandd2026}, and the anonymous code repository is \url{https://github.com/LohseZSai/nighttrap_eandd2026}. The release boundary is therefore derived benchmark assets only: raw images and model weights remain governed by their upstream provider terms.
+NightTrap is a derived benchmark over existing camera-trap sources. The release provides benchmark metadata, task splits, labels, prompts, evaluation artifacts, Croissant metadata, and code under CC BY-NC 4.0 for the derived NightTrap assets, but it does not redistribute raw images whose source datasets impose independent access or license terms. Users obtain raw images from the original data providers and use the released metadata and scripts to rebuild benchmark views. The anonymous dataset repository is \url{https://huggingface.co/datasets/LohseRre/nighttrap-eandd2026}, and the anonymous code repository is \url{https://github.com/LohseZSai/nighttrap_eandd2026}. The release boundary is therefore derived benchmark assets only: raw images and model weights remain governed by their upstream provider terms.
 
 \begin{table*}[h]
 \centering
@@ -598,10 +545,10 @@ Frozen event catalog & anonymized & Event IDs, source keys, site keys, metadata,
 Task split files & released & Train/dev/test splits and label files for Image usability, Empty-event, Species, Count-bin, and Needs-review tasks. \\
 Context-lite construction code & released & Builds prior site-history context from earlier same-site events only; excludes current and future events. \\
 Evaluation scripts & released & Metric scripts for classification, ranking, enrichment, safe auto-pass, and appendix checks. \\
-Baseline scripts & released & CLIP linear probe, MegaDetector threshold, CLIP/context ranker, and check scripts used for reported tables. \\
+Baseline scripts & released & CLIP linear probe, MegaDetector threshold, CLIP+Context ranker, and check scripts used for reported tables. \\
 Code repository & available & Anonymous GitHub repository with release smoke test, requirements, paper source snapshot, and reproducibility scripts that do not include raw images or local paths. \\
 Prompt templates & released & Fixed VLM prompts and answer schemas used for Qwen and reference VLM evaluations. \\
-Metadata schema & released & Field definitions for event catalog, task rows, labels, context-lite fields, and prediction files. \\
+Metadata schema & released & Field definitions for event catalog, task rows, labels, allowed context fields, and prediction files. \\
 Dataset card & released & Documents scope, intended use, label construction, limitations, and known biases in the anonymous Hugging Face dataset repository. \\
 Croissant file & validated & Machine-readable metadata includes the required NeurIPS RAI fields and points to the dataset repository, code repository, and upstream raw-image access instructions. \\
 Raw images & not redistributed & Raw images remain governed by original source dataset terms; users must obtain them from Caltech Camera Traps, Snapshot Serengeti, WCS Camera Traps, and Idaho Camera Traps as allowed. \\
@@ -621,19 +568,19 @@ Asset & Source & License or terms & Redistribution? & Used fields or outputs & C
 \midrule
 Caltech Camera Traps & Original CCT dataset & upstream terms apply & raw images not redistributed & Images are referenced through derived metadata; species/site/time fields are used for benchmark construction & \citep{beery2019iwildcam}; original provider access required \\
 Snapshot Serengeti & Snapshot Serengeti dataset & upstream terms apply & raw images not redistributed & Species labels, count labels, timestamps, and image references & \citep{norouzzadeh2017snapshot}; original provider access required \\
-WCS Camera Traps & WCS source & upstream terms apply & raw images not redistributed & Species labels, site keys, timestamps, and image references & original provider access required \\
-Idaho Camera Traps & Idaho source & upstream terms apply & raw images not redistributed & Species labels, site keys, timestamps, and image references & original provider access required \\
-MegaDetector & Microsoft MegaDetector & model terms apply & model not redistributed & Detector confidence used for empty-event baseline and audit & project documentation \\
+WCS Camera Traps & WCS source & upstream terms apply & raw images not redistributed & Species labels, site keys, timestamps, and image references & \href{https://lila.science/datasets/wcscameratraps}{LILA WCS}; original provider access required \\
+Idaho Camera Traps & Idaho source & upstream terms apply & raw images not redistributed & Species labels, site keys, timestamps, and image references & \href{https://lila.science/datasets/idaho-camera-traps}{LILA Idaho}; original provider access required \\
+MegaDetector & Microsoft MegaDetector & model terms apply & model not redistributed & Detector confidence used for empty-event baseline and audit & \href{https://github.com/agentmorris/MegaDetector}{MegaDetector documentation} \\
 CLIP & OpenAI CLIP & model terms apply & model not redistributed & Frozen embeddings and baseline features & \citep{radford2021clip} \\
-Qwen2-VL & Qwen2-VL-2B & model-card terms apply & model not redistributed & VLM predictions & model card \\
-Qwen3-VL & Qwen3-VL-8B & model-card terms apply & model not redistributed & VLM predictions & model card \\
-NVILA & Local NVILA-family checkpoint & model-card / local adaptation terms apply & model not redistributed & Tuned multimodal comparison & model card and local adaptation note \\
-GPT reference & Closed-source model access & service terms apply & model not redistributed & Reference predictions only & provider terms \\
+Qwen2-VL & Qwen2-VL-2B & model-card terms apply & model not redistributed & VLM predictions & \href{https://huggingface.co/Qwen/Qwen2-VL-2B-Instruct}{Qwen2-VL model card} \\
+Qwen3-VL & Qwen3-VL-8B & model-card terms apply & model not redistributed & VLM predictions & \href{https://huggingface.co/Qwen/Qwen3-VL-8B-Instruct}{Qwen3-VL model card} \\
+NVILA & Local NVILA-family checkpoint & model-card / local adaptation terms apply & model not redistributed & Tuned multimodal comparison & \href{https://huggingface.co/Efficient-Large-Model/NVILA-Lite-8B-hf-preview}{NVILA-Lite card}; local adaptation note \\
+GPT reference & Closed-source model access & service terms apply & model not redistributed & Reference predictions only & \href{https://openai.com/policies/service-terms/}{provider service terms} \\
 \bottomrule
 \end{tabularx}
 \end{table*}
 
-The derived NightTrap package carries its own license notice for metadata, labels, splits, and code, while preserving the restrictions of upstream datasets. Because raw images are not redistributed, users reconstruct image-backed views from upstream sources under the original provider terms.
+The derived NightTrap package carries a CC BY-NC 4.0 license notice for metadata, labels, splits, prompts, documentation, and code authored for the package, while preserving the restrictions of upstream datasets. Because raw images are not redistributed, users reconstruct image-backed views from upstream sources under the original provider terms.
 
 \begin{table*}[h]
 \centering
@@ -646,9 +593,10 @@ The derived NightTrap package carries its own license notice for metadata, label
 Paper item & Main scripts / inputs & Main outputs & Metrics / note \\
 \midrule
 Classification table & \path{92}, \path{93}, \path{106}; task split files; VLM prompt templates; frozen Qwen/GPT reports & \path{table_workflow_task_groups_v09.tex}; \path{table_supervised_finetune_v1.tex} & Accuracy, Macro-F1; rows cover majority, Qwen, CLIP, GPT reference, and best supervised vision baselines. \\
-Needs-review table & \path{94}, \path{107b}; \path{routine_stress_manifest.jsonl}; CLIP/context and tree-ranker artifacts; Qwen3 routine-stress report; relabeling audit batch & \path{table_needs_review_dense_v09.tex}; \path{table_needs_review_tree_rankers_clean_v1.tex}; calibration JSON; \path{relabeling_audit_summary.json} & AUROC, AUPRC, Macro-F1, P@K, enrichment, NDCG, AP@95R; tree variants use clean context-lite fields; label-aware relabeling audit. \\
-Shortcut checks & \path{95}, \path{96}; CLIP split files and frozen image embeddings & \path{table_event_representation_v08.tex}; \path{table_context_leakage_v08.tex}; check JSON files & Shortcut and representation checks; selected rows in main text, full rows in appendix. \\
-Safe auto-pass & \path{collect_v07_metrics.py}; Qwen routine-stress scores; CLIP/context predictions & \path{table_safeautopass_v07.tex}; safe-auto-pass CSV and figure & Auto-pass rate, safe/unsafe pass counts, observed recall under 90/95/98/99\% recall constraints. \\
+Needs-review table & \path{94}, \path{107b}; \path{routine_stress_manifest.jsonl}; CLIP+Context and tree-ranker artifacts; Qwen3 Main Queue report; model-assisted audit batch & \path{table_needs_review_dense_v09.tex}; \path{table_needs_review_tree_rankers_clean_v1.tex}; calibration JSON; \path{modelassist_batch_002_summary.json} & AUROC, AUPRC, Macro-F1, P@K, enrichment, NDCG, AP@95R; tree variants use clean context fields; matched-context audit. \\
+All-in-one smoke check & \path{18_run_end2end_local_model.sh}; \path{aligned_end2end_smoke150_questions.json}; Qwen3-VL-8B raw outputs & \path{binary_needs_review_metrics.json}; \path{final_parse_and_metric_summary.json} & Diagnostic only; binary needs-review Accuracy, Macro-F1, AUROC, AUPRC, P@K, enrichment, and species exact match. \\
+Shortcut checks & \path{95}, \path{96}; Ranker Sub-split files and frozen image embeddings & \path{table_event_representation_v08.tex}; \path{table_context_leakage_v08.tex}; check JSON files & Shortcut and representation checks; selected rows in main text, full rows in appendix. \\
+Safe auto-pass & \path{collect_v07_metrics.py}; Qwen Main Queue scores; CLIP+Context predictions & \path{table_safeautopass_v07.tex}; safe-auto-pass CSV and figure & Auto-pass rate, safe/unsafe pass counts, observed recall under 90/95/98/99\% recall constraints. \\
 Robustness and audits & \path{97}, \path{98}; model reports; frozen event catalog; audit manifests; human audit batch & \path{table_imaging_mode_v08.tex}; \path{table_source_breakdown_v08.tex}; \path{table_megadetector_audit_v08.tex}; \path{audit_summary.json} & Imaging/source grouping and MegaDetector audit manifest; 100-item human audit reports FP/FN on binary-evaluable rows. \\
 Species representation & \path{101}--\path{108}; species splits; MegaDetector boxes; CLIP/DINOv2 embeddings; sensor labels & Detector-crop, DINOv2, supervised fine-tune, and imaging-breakdown tables & Accuracy, Macro-F1, per-class F1, mode/source breakdown; detector-crop rows use full-frame fallback. \\
 \bottomrule
@@ -657,26 +605,26 @@ Species representation & \path{101}--\path{108}; species splits; MegaDetector bo
 
 \begin{table*}[h]
 \centering
-\caption{Compact compute-resource inventory. Missing fields are reported as partial records rather than inferred.}
+\caption{Compact compute-resource inventory. Hardware class, memory, and representative wall-clock logs are recorded for the main run groups; resource rows are for reproducibility rather than carbon accounting.}
 \label{tab:compute_resources}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
-\begin{tabularx}{\textwidth}{p{0.22\linewidth}p{0.22\linewidth}p{0.16\linewidth}X}
+\begin{tabularx}{\textwidth}{p{0.18\linewidth}p{0.21\linewidth}p{0.30\linewidth}X}
 \toprule
 Experiment group & Models / scripts & Recorded resources & Notes \\
 \midrule
-VLM inference & Qwen2-VL, Qwen3-VL, NVILA & GPU cluster; exact GPU, runtime, batch size, and precision partially recorded in current logs & Qwen rows are open-source VLM baselines; NVILA is a tuned multimodal comparison, not a NightTrap-supervised vision classifier. \\
-Representation and ranker baselines & CLIP probes; CLIP/context ranker; XGBoost/LightGBM variants; check scripts & GPU for embeddings; CPU/GPU for sklearn and tree training; float32 feature matrices & Scripts \path{92}, \path{94}, \path{95}--\path{98}, and \path{107b}; several rows reuse frozen embeddings and predictions. \\
-Detector and crop extensions & MegaDetector threshold; detector-crop CLIP/DINOv2; DINOv2 full-frame/crop linear variants & GPU or CPU detector inference; DINOv2 full-frame encoding batch size 128; total runtime not summarized & Includes full-frame fallback for events without usable boxes. \\
-Supervised vision fine-tunes & ViT-B/16 and ConvNeXt-Tiny via \path{104} and \path{106} & GPU 3/4; batch size 16; 2 epochs; ConvNeXt queue 00:32:51--00:49:40 CST on May 4, 2026 & Covers usability, empty, species, and count; no needs-review fine-tune is reported. \\
-Bootstrap and safe auto-pass & Qwen3 scores and CLIP/context scores & CPU; batch size not applicable & Computed from frozen prediction files. \\
+VLM inference & Qwen2-VL, Qwen3-VL, NVILA & 8 A100-SXM4-40GB GPUs; Qwen3-VL logs: 3,328 events in 19:40, 6,000 events in 56:27, and 150-event end-to-end smoke in 635.5s & Qwen rows are open-source VLM baselines; NVILA is a tuned multimodal comparison, not a NightTrap-supervised vision classifier. \\
+Representation and ranker baselines & CLIP probes; CLIP+Context ranker; XGBoost/LightGBM variants; check scripts & A100 GPU for CLIP embeddings; CPU/GPU for sklearn and tree training; float32 feature matrices & Scripts \path{92}, \path{94}, \path{95}--\path{98}, and \path{107b}; several rows reuse frozen embeddings and predictions. \\
+Detector and crop extensions & MegaDetector threshold; detector-crop CLIP/DINOv2; DINOv2 full-frame/crop linear variants & A100 GPU or CPU detector inference; DINOv2 full-frame encoding batch size 128 & Includes full-frame fallback for events without usable boxes. \\
+Supervised vision fine-tunes & ViT-B/16 and ConvNeXt-Tiny via \path{104} and \path{106} & A100 GPU 3/4; initial runs use batch size 16 and 2 epochs; ConvNeXt species convergence check uses batch size 8 and 8 epochs & Covers usability, empty, species, and count; no needs-review fine-tune is reported. \\
+Bootstrap and safe auto-pass & Qwen3 scores and CLIP/context scores & CPU; batch size not applicable & Computed from frozen prediction files; no additional model training. \\
 \bottomrule
 \end{tabularx}
 \end{table*}
 
 \subsection{LLM and VLM Usage Declaration}
 
-VLMs are core experimental subjects in NightTrap, not merely writing tools. Prompt templates and answer schemas are fixed for each task and should be released with the artifact package. Open-source VLM rows, especially Qwen2-VL and Qwen3-VL, are the main model evidence. NVILA is a tuned multimodal comparison and should not be used to close the supervised classifier gap. GPT reference rows are closed-source exploratory references and are not the main reproducibility anchor.
+VLMs are core experimental subjects in NightTrap, not merely writing tools. Prompt templates, answer schemas, and model-card references are fixed for each task and should be released with the artifact package \citep{mitchell2019modelcards}. Open-source VLM rows, especially Qwen2-VL and Qwen3-VL, are the main model evidence. NVILA is a tuned multimodal comparison and should not be used to close the supervised classifier gap. GPT reference rows are closed-source exploratory references and are not the main reproducibility anchor.
 
 LLM assistance may have been used for editing, drafting, and checklist cleanup. It was not used to generate benchmark labels or experimental results unless explicitly stated elsewhere in the paper. Reported numbers come from frozen scripts, prediction files, and table fragments.
 
@@ -688,12 +636,19 @@ The main risks are over-reliance on model outputs, missing events that need revi
 
 \subsection{Questionnaire and Human-Participant Notes}
 
-The questionnaire collected high-level role and usage-preference statistics to motivate task design. It did not collect sensitive personal attributes and was not used to generate labels or experimental results. We do not claim IRB approval. The questionnaire is treated as low-risk, non-interventional aggregate motivation material rather than as a label-generation or outcome-measurement study.
+The questionnaire was voluntary, and participants consented to aggregate research use. It collected high-level role and usage-preference statistics to motivate task design, did not collect sensitive personal attributes or identifiers, and was not used to generate labels or experimental results. We treat it as a low-risk, non-interventional questionnaire handled under an informed-consent procedure; no formal IRB approval number is claimed.
 
 \input{results/questionnaire_translation_v1/questionnaire_appendix_en}
 
 \section{Additional Tables and Run Details}
 \label{app:additional_tables}
+
+\begin{figure}[h]
+\centering
+\includegraphics[width=0.90\linewidth]{figures/nighttrap_radar_vlm_grid.pdf}
+\caption{VLM capability profiles across the four classification tasks. Accuracy and Macro-F1 are separated to show long-tail gaps.}
+\label{fig:radar_vlm_grid}
+\end{figure}
 
 \begin{table}[h]
 \centering
@@ -730,11 +685,11 @@ Baseline & Purpose & Status \\
 \midrule
 Majority baseline & Lower bound for classification and needs-review decisions & Available for main tables \\
 Random-score baseline & Expected queue enrichment under random ranking & Available for needs-review ranking \\
-Rule-only baseline & Context-lite rule baseline for hardset queue-ordering checks & Available for 983 hardset check \\
-Context-lite-only baseline & Tests whether site context alone solves the review task & Available for 983 hardset check \\
+Rule-only baseline & Context-only rule baseline for Input Stress-Test queue-ordering checks & Available for Input Stress-Test check \\
+Context Only baseline & Tests whether site context alone solves the review task & Available for Input Stress-Test check \\
 CLIP / DINOv2 linear probe & Supervised representation baseline & CLIP available for usability/empty/species/count and needs-review ranker variants; DINOv2 full-frame and detector-crop species linear classifiers available in appendix artifacts \\
 ViT / ConvNeXt fine-tuned & Strong supervised image baseline & ViT-B/16 and ConvNeXt-Tiny full-frame fine-tunes available for usability, empty, species, and count; no needs-review fine-tune is reported \\
-MegaDetector threshold / detector+classifier & Empty-filtering pipeline baseline & Empty threshold baseline, detector-assisted empty-pool audit manifest, and 100-item human audit available; CLIP and DINOv2 detector-crop species baselines available with full-frame fallback \\
+MegaDetector threshold / detector+classifier & Empty-filtering detector baseline & Empty threshold baseline, detector-assisted empty-pool audit manifest, and 100-item human audit available; CLIP and DINOv2 detector-crop species baselines available with full-frame fallback \\
 Qwen2-VL-2B & Open-source VLM baseline & Available for reported tables \\
 Qwen3-VL-8B & Open-source VLM baseline & Available for reported tables \\
 NVILA-8B & Tuned multimodal comparison / locally adapted VLM & Exploratory appendix comparison; not counted as a supervised NightTrap vision classifier \\
@@ -747,8 +702,8 @@ The checked NVILA-8B checkpoint is initialized from a pretrained NVILA/NVILA-Lit
 
 \begin{table*}[h]
 \centering
-\caption{Supervised baseline status table. Rows marked available have corresponding result files; no image-only ViT/ConvNeXt needs-review fine-tune is reported.}
-\label{tab:supervised_baseline_todo}
+\caption{Supervised baseline status table. Rows marked available have corresponding result files; no task-specific ViT/ConvNeXt needs-review fine-tune is reported.}
+\label{tab:supervised_baseline_status}
 \scriptsize
 \setlength{\tabcolsep}{3pt}
 \begin{tabularx}{\textwidth}{YYYYYY}
@@ -760,14 +715,18 @@ ViT / ConvNeXt fine-tuned & NightTrap train split per task & Primary full-frame 
 MegaDetector threshold & Empty-filtering train/dev split for threshold selection & Detector confidence over event images & Empty-event filtering & Accuracy, Macro-F1, per-class F1; human audit FP/FN & Not reported as detector-independent performance; 100-item stratified human audit is available \\
 Detector+classifier & Detector crops from NightTrap train split & Animal crops plus full-frame fallback for events without usable boxes & Species; optional empty verification & Accuracy, Macro-F1, per-class F1, coverage & Available for CLIP detector-crop kNN, CLIP detector-crop linear, DINOv2 detector-crop kNN, and DINOv2 detector-crop linear; task-specific ViT/ConvNeXt fine-tunes are full-frame baselines rather than crop-specific detector classifiers \\
 DINOv2/CLIP kNN and linear retrieval & NightTrap train/dev/test crop manifest & Frozen crop or full-frame embeddings plus kNN or linear classifier & Species; optional count support & Accuracy, Macro-F1, per-class F1, coverage & CLIP crop kNN available in \path{detector_crop_retrieval_v1/}; CLIP crop linear in \path{detector_crop_clip_linear_v1/}; DINOv2 crop kNN in \path{detector_crop_dinov2_knn_v1/}; DINOv2 crop linear in \path{detector_crop_dinov2_linear_v1/}; DINOv2 full-frame linear in \path{fullframe_dinov2_linear_species_v1/} \\
-CLIP/context-lite supervised ranker & Needs-review routine-stress train/dev/test split & CLIP event embedding plus allowed context-lite features & Needs-review recommendation & AUROC, AUPRC, P@K, Enrichment@K, safe auto-pass & Available for CLIP-only, context-lite-only, CLIP+context-lite, context sensitivity logistic variants, and clean XGBoost/LightGBM tree variants; no image-only ViT/ConvNeXt needs-review fine-tune is reported \\
+CLIP+Context supervised ranker & Needs-review train/dev/test split & CLIP event embedding plus allowed context features & Needs-review recommendation & AUROC, AUPRC, P@K, Enrichment@K, safe auto-pass & Available for Visual Only, Context Only, CLIP+Context, context sensitivity logistic variants, and clean XGBoost/LightGBM tree variants; no task-specific ViT/ConvNeXt needs-review fine-tune is reported \\
 \bottomrule
 \end{tabularx}
 \end{table*}
 
 \input{results/nighttrap_tables/table_detector_crop_species_v1}
 
+\input{results/nighttrap_tables/table_species_candidate_alignment_v1}
+
 \input{results/nighttrap_tables/table_supervised_finetune_v1}
+
+\input{results/nighttrap_tables/table_convnext_species_convergence_v2}
 
 \input{results/nighttrap_tables/table_species_imaging_breakdown_v1}
 
@@ -779,41 +738,43 @@ For each supervised baseline, the final artifact should include the train/dev/te
 \begin{itemize}
 \item \path{CUDA_VISIBLE_DEVICES=4 python3 scripts/nighttrap_ops_v1/92_run_clip_supervised_baselines.py --gpu 4 --tasks empty,species,count}: CLIP linear probes for empty/species/count. Usability uses \path{results/nighttrap_supervised_baselines/clip_linear_probe_v1/usability/}. Outputs: \path{results/nighttrap_supervised_baselines/clip_linear_probe_v1/}.
 \item \path{python3 scripts/nighttrap_ops_v1/93_run_megadetector_empty_baseline.py}: MegaDetector threshold baseline for empty-event filtering. Outputs: \path{results/nighttrap_supervised_baselines/megadetector_empty_threshold_v1/}.
-\item \path{CUDA_VISIBLE_DEVICES=4 python3 scripts/nighttrap_ops_v1/94_run_needs_review_clip_ranker.py --gpu 4}: CLIP/context-lite logistic ranker for needs-review recommendation. Outputs: \path{results/nighttrap_supervised_baselines/needs_review_clip_context_ranker_v1/}. Appendix ranker variants reuse the frozen split and embeddings to evaluate CLIP-only, context-lite-only, CLIP+context-lite, and context sensitivity variants.
+\item \path{CUDA_VISIBLE_DEVICES=4 python3 scripts/nighttrap_ops_v1/94_run_needs_review_clip_ranker.py --gpu 4}: CLIP+Context logistic ranker for needs-review recommendation. Outputs: \path{results/nighttrap_supervised_baselines/needs_review_clip_context_ranker_v1/}. Appendix ranker variants reuse the frozen split and embeddings to evaluate Visual Only, Context Only, CLIP+Context, and context sensitivity variants.
+\item \path{bash scripts/nighttrap_ops_v1/18_run_end2end_local_model.sh qwen3vl8b results/nighttrap_end2end_smoke_v1/qwen3vl8b_end2end_smoke150 auto}: all-in-one Qwen3-VL-8B smoke check on 150 aligned events. Outputs: \path{results/nighttrap_end2end_smoke_v1/qwen3vl8b_end2end_smoke150/final_parse_and_metric_summary.json} and \path{results/nighttrap_end2end_smoke_v1/qwen3vl8b_end2end_smoke150/binary_needs_review_metrics.json}.
 \item \path{CUDA_VISIBLE_DEVICES=4 python3 scripts/nighttrap_ops_v1/101_run_detector_crop_species_baseline.py --gpu 4 --batch-size 128 --k 5}: CLIP detector-crop kNN species baseline using MegaDetector boxes and full-frame fallback for samples without usable boxes. Outputs: \path{results/nighttrap_supervised_baselines/detector_crop_retrieval_v1/}.
 \item \path{python3 scripts/nighttrap_ops_v1/102_export_species_baseline_diagnostics.py}: exports per-class F1, confusion matrix, and head/medium/tail checks for the existing CLIP full-frame species linear probe. Outputs: \path{results/nighttrap_supervised_baselines/fullframe_clip_linear_species_v1/}.
 \item \path{python3 scripts/nighttrap_ops_v1/103_run_species_representation_extensions.py}: CLIP detector-crop linear classifier and DINOv2 detector-crop kNN species baselines with full-frame fallback. Outputs: \path{results/nighttrap_supervised_baselines/detector_crop_clip_linear_v1/} and \path{results/nighttrap_supervised_baselines/detector_crop_dinov2_knn_v1/}.
-\item \path{python3 scripts/nighttrap_ops_v1/107b_run_needs_review_tree_rankers_clean.py}: clean XGBoost and LightGBM needs-review ranker variants on the frozen CLIP/context-lite split. The clean context excludes audit flags, audit-only current-species support fields, and site common-species name expansion by default. Outputs: \path{results/nighttrap_supervised_baselines/needs_review_tree_ranker_variants_clean_v1/} and \path{results/nighttrap_tables/table_needs_review_tree_rankers_clean_v1.tex}.
+\item \path{python3 scripts/nighttrap_ops_v1/107b_run_needs_review_tree_rankers_clean.py}: clean XGBoost and LightGBM needs-review ranker variants on the Ranker Sub-split. The clean context excludes audit flags, audit-only current-species support fields, and site common-species name expansion by default. Outputs: \path{results/nighttrap_supervised_baselines/needs_review_tree_ranker_variants_clean_v1/} and \path{results/nighttrap_tables/table_needs_review_tree_rankers_clean_v1.tex}.
 \item \path{CUDA_VISIBLE_DEVICES=3 python3 scripts/nighttrap_ops_v1/108_run_dinov2_species_linear_variants.py --gpu 3 --batch-size 128}: DINOv2 detector-crop linear and full-frame linear species baselines. Outputs: \path{results/nighttrap_supervised_baselines/detector_crop_dinov2_linear_v1/} and \path{results/nighttrap_supervised_baselines/fullframe_dinov2_linear_species_v1/}.
 \item \path{CUDA_VISIBLE_DEVICES=3 python3 scripts/nighttrap_ops_v1/104_run_vit_species_finetune.py --epochs 2 --batch-size 16 --num-workers 4}: ViT-B/16 supervised species fine-tune. Outputs: \path{results/nighttrap_supervised_baselines/vit_b16_finetune_species_v1/}.
 \item \path{python3 scripts/nighttrap_ops_v1/105_export_species_imaging_breakdown_v1.py}: joins species predictions with sensor-context imaging-mode labels and exports mode/source summaries. Outputs: \path{results/nighttrap_supervised_baselines/species_imaging_breakdown_v1/} and \path{results/nighttrap_tables/table_species_imaging_breakdown_v1.tex}.
 \item \path{CUDA_VISIBLE_DEVICES=4 python3 scripts/nighttrap_ops_v1/106_run_image_finetune_baselines.py --gpu 4 --model vit_b16 --task empty/count/usability --epochs 2 --batch-size 16 --num-workers 4}: ViT-B/16 non-species classification fine-tunes. Outputs: \path{results/nighttrap_supervised_baselines/vit_b16_finetune_empty_v1/}, \path{vit_b16_finetune_count_v1/}, and \path{vit_b16_finetune_usability_v1/}.
 \item \path{CUDA_VISIBLE_DEVICES=3 python3 scripts/nighttrap_ops_v1/106_run_image_finetune_baselines.py --gpu 3 --model convnext_tiny --task species/empty/count/usability --epochs 2 --batch-size 16 --num-workers 4}: ConvNeXt-Tiny classification fine-tunes. Outputs: \path{results/nighttrap_supervised_baselines/convnext_tiny_finetune_*_v1/}.
+\item \path{CUDA_VISIBLE_DEVICES=3 python3 scripts/nighttrap_ops_v1/106_run_image_finetune_baselines.py --gpu 3 --model convnext_tiny --task species --epochs 8 --batch-size 8 --num-workers 4 --lr 2e-5}: ConvNeXt-Tiny species convergence check. Outputs: \path{results/nighttrap_supervised_baselines/convnext_tiny_finetune_species_v2_e8/}. Test Accuracy is 75.38 and Macro-F1 is 36.75; the best dev Macro-F1 occurs at epoch 5.
 \end{itemize}
 
 \begin{table}[h]
 \centering
-\caption{Input and queue-ordering check on the 983-event hardset. This is a controlled check, not the main needs-review benchmark.}
+\caption{Input and queue-ordering check on the Input Stress-Test ($N=983$). This is a controlled check, not the main needs-review benchmark; the high positive base rate makes enrichment the safer reading of P@50.}
 \label{tab:strict983}
 \small
-\begin{tabular}{llrrr}
+\begin{tabular}{llrrrrr}
 \toprule
-Model & Setting & N & P@50 & NDCG@50 \\
+Model & Setting & N & Base & P@50 & E@50 & NDCG@50 \\
 \midrule
-Rule-only & context-lite & 983 & 0.26 & 0.560 \\
-Qwen2-VL-2B & image-only & 983 & 0.40 & 0.614 \\
-Qwen2-VL-2B & context-lite only & 983 & 0.14 & 0.513 \\
-Qwen2-VL-2B & full context-lite & 983 & 0.54 & 0.638 \\
-Qwen3-VL-8B & image-only & 983 & 0.58 & 0.637 \\
-Qwen3-VL-8B & context-lite only & 983 & 0.38 & 0.620 \\
-Qwen3-VL-8B & full context-lite & 983 & 0.66 & 0.762 \\
+Rule-only & Context Only & 983 & 0.858 & 0.26 & 0.30 & 0.560 \\
+Qwen2-VL-2B & Visual Only & 983 & 0.858 & 0.40 & 0.47 & 0.614 \\
+Qwen2-VL-2B & Context Only & 983 & 0.858 & 0.14 & 0.16 & 0.513 \\
+Qwen2-VL-2B & Combined & 983 & 0.858 & 0.54 & 0.63 & 0.638 \\
+Qwen3-VL-8B & Visual Only & 983 & 0.858 & 0.58 & 0.68 & 0.637 \\
+Qwen3-VL-8B & Context Only & 983 & 0.858 & 0.38 & 0.44 & 0.620 \\
+Qwen3-VL-8B & Combined & 983 & 0.858 & 0.66 & 0.77 & 0.762 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{table*}[h]
 \centering
-\caption{Original three-level hardset check on the 983-event set. All rows use the same A/B/C label space and exclude species, rarity, novelty, frequency-band, and seasonality shortcut fields. This check is retained to evaluate queue ordering, while the main Task 5 target remains binary.}
+\caption{Original three-level Input Stress-Test check. All rows use the same A/B/C label space and exclude species, rarity, novelty, frequency-band, and seasonality shortcut fields. This check is retained to evaluate queue ordering, while the main Task 5 target remains binary.}
 \label{tab:threeway_diagnostic}
 \small
 \setlength{\tabcolsep}{6pt}
@@ -821,16 +782,16 @@ Qwen3-VL-8B & full context-lite & 983 & 0.66 & 0.762 \\
 \toprule
 Model & Input setting & Acc. & Macro-F1 & P@25 & P@50 & NDCG@50 \\
 \midrule
-Rule-only & context-lite & 53.00 & 23.09 & 20.00 & 26.00 & 56.00 \\
-Qwen3-VL-8B & image-only & 48.22 & 24.43 & 56.00 & 58.00 & 63.74 \\
-Qwen3-VL-8B & context-lite only & 53.00 & 23.12 & 48.00 & 38.00 & 62.03 \\
-Qwen3-VL-8B & full context-lite & 46.29 & 28.87 & 60.00 & 66.00 & 76.18 \\
-Qwen2-VL-2B & image-only & 52.80 & 23.04 & 44.00 & 40.00 & 61.36 \\
-Qwen2-VL-2B & context-lite only & 14.24 & 8.31 & 4.00 & 14.00 & 51.25 \\
-Qwen2-VL-2B & full context-lite & 39.27 & 32.97 & 60.00 & 54.00 & 63.81 \\
-NVILA-8B$^{\S}$ & full context-lite & 40.18 & 31.96 & 64.00 & 78.00 & 77.89 \\
-GPT-5.4$^{\dagger}$ & full context-lite & 59.67 & 43.69 & 92.00 & 52.00 & 73.42 \\
-GPT-5.2$^{\ddagger}$ & full context-lite & 58.65 & 42.95 & 76.00 & 38.00 & 72.40 \\
+Rule-only & Context Only & 53.00 & 23.09 & 20.00 & 26.00 & 56.00 \\
+Qwen3-VL-8B & Visual Only & 48.22 & 24.43 & 56.00 & 58.00 & 63.74 \\
+Qwen3-VL-8B & Context Only & 53.00 & 23.12 & 48.00 & 38.00 & 62.03 \\
+Qwen3-VL-8B & Combined & 46.29 & 28.87 & 60.00 & 66.00 & 76.18 \\
+Qwen2-VL-2B & Visual Only & 52.80 & 23.04 & 44.00 & 40.00 & 61.36 \\
+Qwen2-VL-2B & Context Only & 14.24 & 8.31 & 4.00 & 14.00 & 51.25 \\
+Qwen2-VL-2B & Combined & 39.27 & 32.97 & 60.00 & 54.00 & 63.81 \\
+NVILA-8B$^{\S}$ & Combined & 40.18 & 31.96 & 64.00 & 78.00 & 77.89 \\
+GPT-5.4$^{\dagger}$ & Combined & 59.67 & 43.69 & 92.00 & 52.00 & 73.42 \\
+GPT-5.2$^{\ddagger}$ & Combined & 58.65 & 42.95 & 76.00 & 38.00 & 72.40 \\
 \bottomrule
 \end{tabular}
 \vspace{0.25em}
@@ -840,22 +801,46 @@ $^{\S}$ NVILA-8B is a locally adapted NVILA-family VLM with a frozen SigLIP/ViT-
 \end{minipage}
 \end{table*}
 
+\begin{table*}[h]
+\centering
+\caption{All-in-one end-to-end smoke check on 150 aligned events. The binary needs-review target maps \texttt{review} and \texttt{priority\_review} to \texttt{needs\_review}. This is a diagnostic check rather than the main comparison, because the subset contains image-usable, nonempty animal events by construction.}
+\label{tab:end2end_smoke}
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+Model & N & Pos. base & Species exact & Acc. & Macro-F1 & AUROC & AUPRC & P@50 & E@50 & NR recall \\
+\midrule
+Qwen3-VL-8B & 150 & 63.33 & 12.00 & 42.67 & 39.93 & 54.11 & 64.87 & 72.00 & 1.14 & 16.84 \\
+\bottomrule
+\end{tabular}
+\vspace{0.25em}
+\begin{minipage}{0.97\linewidth}
+\footnotesize
+Acc., Macro-F1, AUROC, AUPRC, P@50, and NR recall are reported for the collapsed binary needs-review target. E@50 is enrichment over the positive base rate. Species exact is included to show one major failure point inside the combined output.
+\end{minipage}
+\end{table*}
+
 \begin{table}[h]
 \centering
-\caption{Bootstrap confidence intervals for selected 983-event hardset check rows.}
+\caption{Bootstrap confidence intervals for selected Input Stress-Test rows.}
 \label{tab:ci}
 \small
 \begin{tabular}{llccc}
 \toprule
 Model & Setting & P@50 [95\% CI] & NDCG@50 [95\% CI] & Macro-F1 [95\% CI] \\
 \midrule
-Rule-only & context-lite & 0.26 [0.14, 0.40] & 0.560 [0.482, 0.647] & 0.231 [0.221, 0.240] \\
-Qwen3-VL-8B & image-only & 0.58 [0.44, 0.72] & 0.637 [0.510, 0.789] & 0.244 [0.226, 0.262] \\
-Qwen3-VL-8B & context-lite only & 0.38 [0.26, 0.54] & 0.620 [0.505, 0.714] & 0.231 [0.221, 0.240] \\
-Qwen3-VL-8B & full context-lite & 0.66 [0.48, 0.76] & 0.762 [0.615, 0.855] & 0.289 [0.262, 0.315] \\
+Rule-only & Context Only & 0.26 [0.14, 0.40] & 0.560 [0.482, 0.647] & 0.231 [0.221, 0.240] \\
+Qwen3-VL-8B & Visual Only & 0.58 [0.44, 0.72] & 0.637 [0.510, 0.789] & 0.244 [0.226, 0.262] \\
+Qwen3-VL-8B & Context Only & 0.38 [0.26, 0.54] & 0.620 [0.505, 0.714] & 0.231 [0.221, 0.240] \\
+Qwen3-VL-8B & Combined & 0.66 [0.48, 0.76] & 0.762 [0.615, 0.855] & 0.289 [0.262, 0.315] \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\input{results/nighttrap_tables/table_main_classification_ci_v1}
+
+\input{results/nighttrap_tables/table_task5_bootstrap_ci_v1}
 
 \begin{table*}[h]
 \centering
@@ -878,7 +863,7 @@ Representation & N & Base & AUROC & AUPRC & Macro-F1 & P@50 & P@100 & E@50 & E@1
 
 \begin{table*}[h]
 \centering
-\caption{Full context shortcut check for needs-review recommendation on the CLIP/context-lite split.}
+\caption{Full context shortcut check for needs-review recommendation on the Ranker Sub-split.}
 \label{tab:context_shortcut_full}
 \small
 \setlength{\tabcolsep}{4pt}
@@ -916,6 +901,7 @@ Mode & Task & Model & N & Acc. & Macro-F1 & P@50 & Metric \\
 \caption{Full source-wise robustness table. Count-bin rows are source-constrained because reliable count labels are available here from Snapshot Serengeti.}
 \label{tab:source_breakdown}
 \small
+\resizebox{\textwidth}{!}{%
 \begin{tabular}{lllrrrrr}
 \toprule
 Source & Task & Model & N & Acc. & Macro-F1 & P@50 & Metric \\
@@ -923,6 +909,7 @@ Source & Task & Model & N & Acc. & Macro-F1 & P@50 & Metric \\
 \input{results/nighttrap_tables/table_source_breakdown_v08.tex}\\
 \bottomrule
 \end{tabular}
+}
 \end{table*}
 
 \begin{table}[h]
@@ -940,6 +927,8 @@ Audit bucket & Manifest N & Status & FP rate & FN rate \\
 \end{table}
 
 \input{results/nighttrap_megadetector_independent_audit_v1/table_megadetector_independent_audit.tex}
+
+\input{results/nighttrap_tables/table_detector_pool_boundary_v1.tex}
 
 \clearpage
 \input{checklist.tex}

@@ -1,6 +1,6 @@
 # NightTrap Code Package
 
-This is an anonymous staging copy of NightTrap scripts and paper-side reproducibility material.
+This is the anonymous NeurIPS E&D 2026 code package for NightTrap scripts and paper-side reproducibility material.
 
 ## Included
 
@@ -14,6 +14,10 @@ This is an anonymous staging copy of NightTrap scripts and paper-side reproducib
 The derived dataset package is staged at:
 
 https://huggingface.co/datasets/LohseRre/nighttrap-eandd2026
+
+The paired code repository is:
+
+https://github.com/LohseZSai/nighttrap_eandd2026
 
 ## Not included
 

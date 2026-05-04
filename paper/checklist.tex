@@ -21,14 +21,14 @@
 \begin{itemize}
     \item[] Question: Do the main claims made in the abstract and introduction accurately reflect the paper's contributions and scope?
     \item[] Answer: \answerYes{}
-    \item[] Justification: The abstract and introduction state that NightTrap is a benchmark for night camera-trap review pipelines, with the fifth task fixed as binary needs-review recommendation. The paper also states that safe auto-pass remains limited, matching the reported results.
+    \item[] Justification: The abstract and introduction state that NightTrap is a benchmark for night camera-trap review decisions, with the fifth task fixed as binary needs-review recommendation. The paper also states that safe auto-pass remains limited, matching the reported results.
 \end{itemize}
 
 \item {\bf Limitations}
 \begin{itemize}
     \item[] Question: Does the paper discuss the limitations of the work performed by the authors?
     \item[] Answer: \answerYes{}
-    \item[] Justification: The paper includes a Limitations section covering the scope of needs-review labels, the distinction between the 983-event hardset and 6000-event routine-stress setting, Qwen3 continuous-score calibration, closed-source references, and remaining annotation checks.
+    \item[] Justification: The paper includes a Limitations section covering the scope of needs-review labels, the distinction between the Input Stress-Test and the Main Queue Set, VLM score calibration, closed-source references, and audit-scope limitations.
 \end{itemize}
 
 \item {\bf Theory assumptions and proofs}
@@ -62,15 +62,15 @@
 \item {\bf Experiment statistical significance}
 \begin{itemize}
     \item[] Question: Does the paper report error bars suitably and correctly defined or other appropriate information about the statistical significance of the experiments?
-    \item[] Answer: \answerNo{}
-    \item[] Justification: Selected bootstrap confidence intervals, calibration diagnostics, and human-audit summaries exist, but not all main rows have uncertainty intervals.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: The paper reports empirical 95\% bootstrap confidence intervals for selected main classification rows and needs-review queue metrics in Appendix Tables~\ref{tab:main_classification_ci} and~\ref{tab:task5_bootstrap_ci}. Calibration diagnostics, source breakdowns, and audit/resource rows are reported as diagnostic checks and are not used for fine-grained significance claims.
 \end{itemize}
 
 \item {\bf Experiments compute resources}
 \begin{itemize}
     \item[] Question: For each experiment, does the paper provide sufficient information on the computer resources (type of compute workers, memory, time of execution) needed to reproduce the experiments?
-    \item[] Answer: \answerNo{}
-    \item[] Justification: The appendix includes a partial compute-resource table. Newly added ViT/ConvNeXt and related baselines have partial records, but older VLM runtime information is incomplete.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Appendix Table~\ref{tab:compute_resources} reports the compute class, GPU memory, representative wall-clock logs, batch sizes or epochs where applicable, and which rows reuse frozen predictions or embeddings. The main VLM and supervised-vision runs were executed on an A100-SXM4-40GB server; the table is intended to support reproduction, not to provide a full carbon audit.
 \end{itemize}
 
 \item {\bf Code of ethics}
@@ -98,14 +98,14 @@
 \begin{itemize}
     \item[] Question: Are the creators or original owners of assets (e.g., code, data, models), used in the paper, properly credited and are the license and terms of use explicitly mentioned and properly respected?
     \item[] Answer: \answerYes{}
-    \item[] Justification: The appendix provides a license and data-access inventory for source datasets and models. NightTrap releases derived metadata, labels, splits, prompts, and code; raw images and model weights are not redistributed and remain governed by upstream provider or model-card terms.
+    \item[] Justification: The appendix provides a license and data-access inventory with citations or URLs for the source datasets, MegaDetector, CLIP, Qwen2-VL, Qwen3-VL, NVILA, and closed-source reference access. NightTrap releases derived metadata, labels, splits, prompts, and code under CC BY-NC 4.0 for the derived assets; raw images and model weights are not redistributed and remain governed by upstream provider, model-card, or service terms.
 \end{itemize}
 
 \item {\bf New assets}
 \begin{itemize}
     \item[] Question: Are new assets introduced in the paper well documented and is the documentation provided alongside the assets?
     \item[] Answer: \answerYes{}
-    \item[] Justification: NightTrap releases derived metadata, splits, labels, prompts, Croissant metadata, a dataset card, and code, while documenting that raw images are governed by upstream access terms.
+    \item[] Justification: NightTrap releases derived metadata, splits, labels, prompts, Croissant metadata, a dataset card, representative QA examples, and code, while documenting that raw images are governed by upstream access terms.
 \end{itemize}
 
 \item {\bf Crowdsourcing and research with human subjects}
@@ -118,15 +118,15 @@
 \item {\bf Institutional review board (IRB) approvals or equivalent for research with human subjects}
 \begin{itemize}
     \item[] Question: Does the paper describe potential risks incurred by study participants, whether such risks were disclosed to the subjects, and whether Institutional Review Board (IRB) approvals (or an equivalent approval/review based on the requirements of your country or institution) were obtained?
-    \item[] Answer: \answerNo{}
-    \item[] Justification: No IRB approval is claimed. The questionnaire was low-risk and non-interventional, and it was used only as aggregate motivation rather than for benchmark labels or experimental results.
+    \item[] Answer: \answerYes{}
+    \item[] Justification: Participants completed the questionnaire voluntarily and consented to aggregate research use. The questionnaire collected only high-level role and usage-preference information, did not collect sensitive personal attributes or identifiers, and was not used to create benchmark labels or experimental outcomes. The paper describes this low-risk informed-consent procedure and does not claim a formal IRB approval number.
 \end{itemize}
 
 \item {\bf Declaration of LLM usage}
 \begin{itemize}
     \item[] Question: Does the paper describe the usage of LLMs if it is an important, original, or non-standard component of the core methods in this research? Note that if the LLM is used only for writing, editing, or formatting purposes and does not impact the core methodology, scientific rigor, or originality of the research, declaration is not required.
     \item[] Answer: \answerYes{}
-    \item[] Justification: The appendix declares that VLMs are experimental subjects in the benchmark. Any LLM assistance for writing or editing did not generate benchmark labels or experimental results.
+    \item[] Justification: The appendix declares that VLMs are experimental subjects in the benchmark, and that prompt templates, answer schemas, and model-card references are fixed for each task. Any LLM assistance for writing or editing did not generate benchmark labels or experimental results.
 \end{itemize}
 
 \end{enumerate}
