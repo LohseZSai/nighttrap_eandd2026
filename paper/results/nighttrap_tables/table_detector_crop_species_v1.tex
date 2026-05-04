@@ -1,0 +1,19 @@
+\begin{table}[h]
+\centering
+\caption{Species representation baselines with detector-crop coverage. All rows evaluate the full 1,775-event species test set. Detector-crop rows use MegaDetector boxes when available and full-frame fallback otherwise.}
+\label{tab:detector_crop_species}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+Baseline & N & Box coverage & Accuracy & Macro-F1 \\
+\midrule
+CLIP full-frame linear probe & 1,775 & n/a & 65.30 & 35.58 \\
+DINOv2 full-frame linear probe & 1,775 & n/a & 74.03 & 39.50 \\
+CLIP detector-crop kNN + fallback & 1,775 & 36.79 & 43.72 & 18.38 \\
+CLIP detector-crop linear + fallback & 1,775 & 36.79 & 48.28 & 26.37 \\
+DINOv2 detector-crop kNN + fallback & 1,775 & 36.79 & 52.90 & 28.83 \\
+DINOv2 detector-crop linear + fallback & 1,775 & 36.79 & 56.06 & 31.15 \\
+ViT-B/16 fine-tune & 1,775 & n/a & 57.97 & 24.88 \\
+\bottomrule
+\end{tabular}
+\end{table}

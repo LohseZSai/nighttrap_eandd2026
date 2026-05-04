@@ -1,0 +1,19 @@
+\begin{table*}[h]
+\centering
+\caption{Clean tree-based needs-review ranker variants on the frozen 913-event CLIP/context-lite split. Clean context-lite excludes audit flags, audit-only current-species support fields, and site common-species name expansion by default. Values are percentages except enrichment.}
+\label{tab:needs_review_tree_rankers_clean}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Setting & N & AUROC & AUPRC & Macro-F1 & P@50 & P@100 & E@50 & AP@95R \\
+\midrule
+xgboost image-only & 913 & 58.70 & 35.07 & 44.79 & 56.00 & 45.00 & 2.21$\times$ & 3.40 \\
+xgboost clean-context-lite-only & 913 & 56.99 & 29.34 & 51.67 & 30.00 & 33.00 & 1.19$\times$ & 10.62 \\
+xgboost CLIP+clean-context-lite & 913 & 60.08 & 31.70 & 45.98 & 30.00 & 39.00 & 1.19$\times$ & 10.41 \\
+lightgbm image-only & 913 & 58.43 & 35.80 & 44.44 & 54.00 & 46.00 & 2.13$\times$ & 4.27 \\
+lightgbm clean-context-lite-only & 913 & 60.88 & 29.30 & 47.90 & 22.00 & 22.00 & 0.87$\times$ & 13.03 \\
+lightgbm CLIP+clean-context-lite & 913 & 59.01 & 31.09 & 45.93 & 32.00 & 37.00 & 1.26$\times$ & 10.84 \\
+\bottomrule
+\end{tabular}
+\end{table*}

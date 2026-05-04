@@ -1,0 +1,21 @@
+\begin{table*}[t]
+\centering
+\caption{Ablation and shortcut-check summary. The table reports the main conclusion from each check while keeping the full detailed tables in the appendix. Needs-review rows use the binary \texttt{needs\_review} mapping unless explicitly marked as the 983-event hardset ranking check.}
+\label{tab:ablation_diagnostics}
+\small
+\setlength{\tabcolsep}{4pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{p{0.19\linewidth}p{0.28\linewidth}p{0.23\linewidth}p{0.22\linewidth}}
+\toprule
+Diagnostic & Comparison & Main result & Takeaway \\
+\midrule
+Event representation & First frame vs. three-slot mean on CLIP needs-review split & P@50 is unchanged at 40.00; AUPRC is 30.98 vs. 30.74 & Three image slots do not automatically add useful signal because many events repeat the same frame path. \\
+Context shortcut & Image-only, context-lite-only, full context-lite, shuffled context, site-frequency-only & Site-frequency-only reaches P@50=64.00, while context-lite-only has AUROC=60.70 but P@50=18.00 & Site history carries strong priors, so context gains must be treated as shortcut risk unless audited against image evidence. \\
+Routine-stress deployment & Qwen3-VL-8B safe auto-pass under recall constraints & Auto-pass is 7.42 at 95\% recall and 3.35 at 98\% recall & Queue ordering is more mature than automatic pass-through; high-recall workload reduction remains small. \\
+Imaging mode robustness & Night-color vs. night-IR groups & Qwen3 needs-review P@50 drops from 66.00 on night-color to 52.00 on night-IR & Night imaging mode changes the review recommendation problem and should be reported as a robustness check. \\
+Source coverage & Source-wise breakdowns for classification and needs-review & Count-bin is Snapshot Serengeti-only; other tasks vary by source and site composition & Source heterogeneity is part of the benchmark rather than noise to hide. \\
+MegaDetector-assisted empty pool & 100-item human audit from the detector-assisted pool & 90 evaluable rows: 53 TP, 4 FP, 32 TN, and 1 FN & Detector-assisted construction is useful infrastructure, but this audit quantifies risk rather than proving detector-independent reliability. \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

@@ -1,0 +1,17 @@
+\begin{table*}[h]
+\centering
+\caption{Needs-review label rubric. The deployed Task 5 target is binary: \texttt{routine} maps to \texttt{needs\_review=0}, and \texttt{review} maps to \texttt{needs\_review=1}. This is a review-assistance label, not a biological novelty label.}
+\label{tab:needs_review_rubric}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{p{2.2cm}p{3.1cm}p{3.0cm}p{3.1cm}p{3.2cm}p{1.4cm}}
+\toprule
+Benchmark label & Decision meaning & Visible evidence & Site/context condition & Example & Binary mapping \\
+\midrule
+\texttt{routine} & Image-usable animal event that can be deprioritized under benchmark rules. & Animal is visible and evidence is sufficient for ordinary review. & Allowed site and season context do not indicate a review need. & Common deer, zebra, or similar event at a site where that taxon is routinely observed. & \texttt{0} \\
+\texttt{review} & Event should enter the human-review queue because identity, count, or interpretation may need confirmation. & Animal evidence is visible, but the event may be ambiguous, crowded, or worth checking. & Allowed context or visual evidence suggests the event should not be treated as routine. & Ambiguous species appearance, uncertain count, partial body, or event evidence that warrants reviewer confirmation. & \texttt{1} \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

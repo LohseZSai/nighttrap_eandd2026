@@ -1,0 +1,48 @@
+\begin{table*}[t]
+\centering
+\caption{Needs-review recommendation and hardset checks. Panel A reports binary queue metrics for the realistic routine-stress setting and the frozen 913-event CLIP/context-lite check split. Panel B reports only the metrics defined for the 983-event hardset input check. Rows from the 6000, 913, and 983 splits answer different questions; they are not one leaderboard. All values are percentages except enrichment.}
+\label{tab:needs_review_main}
+\scriptsize
+\setlength{\tabcolsep}{3.6pt}
+\textbf{Panel A: binary needs-review queue metrics}\par\vspace{0.25em}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrrrrrr}
+\toprule
+Split & Model / input & N & Base & AUROC & AUPRC & Macro-F1 & P@50 & P@100 & Enrich@50 & NDCG & Auto-pass@95R \\
+\midrule
+6000 routine-stress & Random-score baseline & 6000 & 30.00 & \missingmetric & \missingmetric & \missingmetric & 30.00 & 30.00 & 1.00$\times$ & \missingmetric & \missingmetric \\
+\rowcolor{NightTrapGray}
+6000 routine-stress & Qwen3-VL-8B, full context-lite & 6000 & 30.00 & 57.88 & 38.44 & 38.91 & 66.00 & 64.00 & 2.20$\times$ & 67.96 & 7.42 \\
+913 CLIP split & CLIP/context-lite logistic ranker & 913 & 25.30 & 55.98 & 29.72 & 49.65 & 32.00 & 33.00 & 1.26$\times$ & 31.32 & 8.43 \\
+913 CLIP split & XGBoost image-only ranker & 913 & 25.30 & 58.70 & 35.07 & 44.79 & 56.00 & 45.00 & 2.21$\times$ & 48.59 & 3.40 \\
+913 CLIP split & LightGBM image-only ranker & 913 & 25.30 & 58.43 & 35.80 & 44.44 & 54.00 & 46.00 & 2.13$\times$ & 50.13 & 4.27 \\
+913 CLIP split & XGBoost clean-context-lite ranker & 913 & 25.30 & 56.99 & 29.34 & 51.67 & 30.00 & 33.00 & 1.19$\times$ & 32.59 & 10.62 \\
+913 CLIP split & XGBoost CLIP+clean-context ranker & 913 & 25.30 & 60.08 & 31.70 & 45.98 & 30.00 & 39.00 & 1.19$\times$ & 34.21 & 10.41 \\
+913 CLIP split & LightGBM clean-context-lite ranker & 913 & 25.30 & 60.88 & 29.30 & 47.90 & 22.00 & 22.00 & 0.87$\times$ & 18.92 & 13.03 \\
+913 CLIP split & LightGBM CLIP+clean-context ranker & 913 & 25.30 & 59.01 & 31.09 & 45.93 & 32.00 & 37.00 & 1.26$\times$ & 32.84 & 10.84 \\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.7em}
+
+\textbf{Panel B: 983-event hardset input and queue-ordering check}\par\vspace{0.25em}
+\resizebox{0.86\textwidth}{!}{%
+\begin{tabular}{llrrrr}
+\toprule
+Split & Model / input & N & Macro-F1 & P@50 & NDCG@50 \\
+\midrule
+983 hardset & Rule-only, context-lite & 983 & 23.09 & 26.00 & 56.00 \\
+983 hardset & Qwen2-VL-2B, full context-lite & 983 & 32.97 & 54.00 & 63.81 \\
+983 hardset & Qwen3-VL-8B, full context-lite & 983 & 28.87 & 66.00 & 76.18 \\
+\rowcolor{NightTrapGray}
+983 hardset & NVILA-8B, full context-lite & 983 & 31.96 & \textbf{78.00} & \textbf{77.89} \\
+983 hardset & GPT-5.4 reference, full context-lite & 983 & \textbf{43.54} & 52.00 & 73.42 \\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.25em}
+\begin{minipage}{0.96\linewidth}
+\footnotesize
+The 6000-event set is the headline operational queue. The 913-event split is a frozen supervised-ranker check with available CLIP embeddings and valid context-lite features. The 983-event hardset is review-heavy and is used only to compare input settings and queue ordering; these rows should not be read as a single leaderboard.
+\end{minipage}
+\end{table*}

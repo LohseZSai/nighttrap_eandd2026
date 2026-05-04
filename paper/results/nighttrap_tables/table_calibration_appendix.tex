@@ -1,0 +1,19 @@
+\begin{table*}[h]
+\centering
+\caption{Calibration checks for needs-review scores. Qwen3 scores are computed from frozen choice probabilities by summing the probabilities assigned to needs-review choices; CLIP/context-lite scores are logistic probabilities on its frozen 913-event split. ECE uses ten equal-width score bins.}
+\label{tab:calibration_appendix}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{lrrrrrrr}
+\toprule
+Model & N & Base & AUROC & AUPRC & Brier & ECE & AP@95R \\
+\midrule
+Qwen3-VL-8B full context-lite & 6000 & 30.00 & 57.88 & 38.44 & 0.538 & 0.543 & 7.42 \\
+CLIP/context-lite logistic ranker & 913 & 25.30 & 55.98 & 29.72 & 0.360 & 0.348 & 8.43 \\
+\bottomrule
+\end{tabular}
+\vspace{0.25em}
+\begin{minipage}{0.95\linewidth}
+\footnotesize These checks are computed from frozen scores and do not introduce a new model run. The Qwen3 probabilities are not a separately calibrated binary head, so they should be used as ranking evidence rather than calibrated deployment probabilities.
+\end{minipage}
+\end{table*}

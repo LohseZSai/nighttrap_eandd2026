@@ -1,0 +1,32 @@
+\begin{table*}[h]
+\centering
+\caption{Species baselines by inferred night imaging mode. Mode labels are joined from the sensor-context asset inventory by primary image path; missing joins remain unknown.}
+\label{tab:species_imaging_breakdown_v1}
+\small
+\begin{tabular}{llrrr}
+\toprule
+Model & Imaging mode & N & Accuracy & Macro-F1 \\
+\midrule
+CLIP full-frame linear & night\_color & 246 & 79.67 & 24.46 \\
+CLIP full-frame linear & night\_ir & 1,450 & 63.93 & 22.47 \\
+CLIP full-frame linear & night\_lowlight & 75 & 45.33 & 9.65 \\
+CLIP full-frame linear & night\_white\_flash & 4 & 50.00 & 2.04 \\
+CLIP crop kNN & night\_color & 246 & 63.41 & 15.22 \\
+CLIP crop kNN & night\_ir & 1,450 & 39.79 & 10.96 \\
+CLIP crop kNN & night\_lowlight & 75 & 54.67 & 11.52 \\
+CLIP crop kNN & night\_white\_flash & 4 & 50.00 & 2.17 \\
+CLIP crop linear & night\_color & 246 & 70.33 & 18.51 \\
+CLIP crop linear & night\_ir & 1,450 & 44.97 & 15.89 \\
+CLIP crop linear & night\_lowlight & 75 & 40.00 & 9.51 \\
+CLIP crop linear & night\_white\_flash & 4 & 50.00 & 2.00 \\
+DINOv2 crop kNN & night\_color & 246 & 73.98 & 22.93 \\
+DINOv2 crop kNN & night\_ir & 1,450 & 49.10 & 18.97 \\
+DINOv2 crop kNN & night\_lowlight & 75 & 57.33 & 11.06 \\
+DINOv2 crop kNN & night\_white\_flash & 4 & 50.00 & 1.82 \\
+ViT-B/16 fine-tune & night\_color & 246 & 79.67 & 20.78 \\
+ViT-B/16 fine-tune & night\_ir & 1,450 & 56.07 & 17.59 \\
+ViT-B/16 fine-tune & night\_lowlight & 75 & 25.33 & 8.30 \\
+ViT-B/16 fine-tune & night\_white\_flash & 4 & 25.00 & 1.48 \\
+\bottomrule
+\end{tabular}
+\end{table*}

@@ -1,0 +1,26 @@
+\begin{table*}[h]
+\centering
+\caption{Needs-review ranker variants on the frozen 913-event CLIP split. All variants use the same site-disjoint split, label mapping, base rate, and score direction. Values are percentages except enrichment.}
+\label{tab:ranker_variants}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{lrrrrrrrr}
+\toprule
+Setting & N & AUROC & AUPRC & Macro-F1 & P@50 & P@100 & E@50 & AP@95R \\
+\midrule
+CLIP-only logistic & 913 & 54.63 & 30.74 & 49.74 & 40.00 & 35.00 & 1.58$\times$ & 5.48 \\
+context-lite-only logistic & 913 & 60.70 & 32.42 & 51.38 & 18.00 & 43.00 & 0.71$\times$ & 7.34 \\
+CLIP+context-lite logistic & 913 & 55.98 & 29.72 & 49.65 & 32.00 & 33.00 & 1.26$\times$ & 8.43 \\
+full context-lite without species history & 913 & 48.27 & 25.01 & 44.83 & 32.00 & 28.00 & 1.26$\times$ & 5.26 \\
+season-only & 913 & 48.27 & 25.01 & 44.83 & 32.00 & 28.00 & 1.26$\times$ & 5.26 \\
+site history without species names & 913 & 54.72 & 28.62 & 47.37 & 28.00 & 27.00 & 1.11$\times$ & 10.51 \\
+coarse site-frequency only & 913 & 53.30 & 28.21 & 47.56 & 38.00 & 31.00 & 1.50$\times$ & 12.38 \\
+site-frequency-only stress-test prior & 913 & 56.94 & 35.31 & 45.92 & 64.00 & 49.00 & 2.53$\times$ & 10.95 \\
+shuffled-context logistic & 913 & 53.07 & 28.64 & 49.65 & 36.00 & 31.00 & 1.42$\times$ & 4.71 \\
+\bottomrule
+\end{tabular}
+\vspace{0.25em}
+\begin{minipage}{0.95\linewidth}
+\footnotesize These are lightweight logistic variants over frozen CLIP embeddings and allowed context fields. They are check baselines, not new VLM runs.
+\end{minipage}
+\end{table*}

@@ -1,0 +1,23 @@
+\begin{table*}[h]
+\centering
+\caption{Supervised full-frame fine-tuning baselines for the four classification tasks. All rows use the primary event image and the frozen NightTrap train/dev/test split for that task.}
+\label{tab:supervised_finetune_v1}
+\scriptsize
+\setlength{\tabcolsep}{3pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrll}
+\toprule
+Model & Task & Test N & Accuracy & Macro-F1 & Training setting & Split \\
+\midrule
+ViT-B/16 fine-tune & Image usability & 133 & 82.71 & 81.78 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 720/139/133 train/dev/test \\
+ViT-B/16 fine-tune & Empty-event & 785 & 82.68 & 75.10 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 3,665/786/785 train/dev/test \\
+ViT-B/16 fine-tune & Species & 1,775 & 57.97 & 24.88 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 8,286/1,776/1,775 train/dev/test \\
+ViT-B/16 fine-tune & Count-bin & 3,328 & 65.93 & 42.34 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 15,532/3,328/3,328 train/dev/test \\
+ConvNeXt-Tiny fine-tune & Image usability & 133 & 75.94 & 73.41 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 720/139/133 train/dev/test \\
+ConvNeXt-Tiny fine-tune & Empty-event & 785 & 87.13 & 80.13 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 3,665/786/785 train/dev/test \\
+ConvNeXt-Tiny fine-tune & Species & 1,775 & 57.35 & 21.34 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 8,286/1,776/1,775 train/dev/test \\
+ConvNeXt-Tiny fine-tune & Count-bin & 3,328 & 77.07 & 59.70 & ImageNet init; primary full-frame; AdamW lr $2{\times}10^{-5}$; 2 epochs; batch 16; seed 42 & 15,532/3,328/3,328 train/dev/test \\
+\bottomrule
+\end{tabular}
+}
+\end{table*}

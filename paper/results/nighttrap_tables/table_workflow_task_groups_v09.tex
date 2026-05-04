@@ -1,0 +1,36 @@
+\begin{table*}[t]
+\centering
+\caption{Performance across the four NightTrap review-workflow classification tasks. Macro-F1 and Accuracy are reported as separate percentage columns so that long-tail performance is not hidden inside overall accuracy. Closed-source models are reference rows; open-source VLMs and camera-trap baselines are the main reproducible comparisons.}
+\label{tab:workflow_main}
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{llrrrrrrrr}
+\toprule
+\multirow{2}{*}{Group} & \multirow{2}{*}{Model} &
+\multicolumn{2}{c}{Image usability} &
+\multicolumn{2}{c}{Empty-event} &
+\multicolumn{2}{c}{Species} &
+\multicolumn{2}{c}{Count-bin} \\
+\cmidrule(lr){3-4}\cmidrule(lr){5-6}\cmidrule(lr){7-8}\cmidrule(lr){9-10}
+ & & Macro-F1 & Acc. & Macro-F1 & Acc. & Macro-F1 & Acc. & Macro-F1 & Acc. \\
+\midrule
+\rowcolor{NightTrapGray}
+Reference & GPT-5.4 reference$^{\dagger}$ & 79.04 & 79.13 & \textbf{81.68} & \textbf{90.06} & 34.13 & 88.79 & \textbf{64.48} & \textbf{82.57} \\
+\addlinespace[2pt]
+Open-source VLM & Qwen2-VL-2B & 34.63 & 40.22 & 62.88 & 83.57 & 29.87 & 83.72 & 42.29 & 56.04 \\
+Open-source VLM & Qwen3-VL-8B & \textbf{83.64} & \textbf{84.17} & 75.24 & 87.26 & \textbf{48.09} & \textbf{88.56} & 58.66 & 86.30 \\
+\addlinespace[2pt]
+Camera-trap / representation & Majority baseline & 37.69 & 60.48 & 45.45 & 83.31 & 0.79 & 19.77 & 21.70 & 76.68 \\
+Camera-trap / representation & CLIP linear probe & 68.20 & 69.92 & 75.25 & 83.82 & 35.58 & 65.30 & 49.06 & 69.86 \\
+Camera-trap / representation & Best supervised vision baseline per task$^{\ddagger}$ & 81.78 & 82.71 & 80.13 & 87.13 & 39.50 & 74.03 & 59.70 & 77.07 \\
+\bottomrule
+\end{tabular}
+}
+\vspace{0.25em}
+\begin{minipage}{0.97\linewidth}
+\footnotesize
+$^{\dagger}$ The GPT-5.4 row uses the completed rerun with zero failed samples across the five tasks. Detector-assisted empty-pool construction is discussed as a data-construction caveat rather than as detector-independent evidence.
+$^{\ddagger}$ Best per task among the completed supervised vision baselines: CLIP and DINOv2 linear probes, ViT-B/16 fine-tunes, and ConvNeXt-Tiny fine-tunes. Full rows and training settings are in Appendix Tables~\ref{tab:detector_crop_species} and~\ref{tab:supervised_finetune_v1}.
+\end{minipage}
+\end{table*}
